@@ -52,7 +52,7 @@ function tutorial() {
 function start() {
   game = new Challenge(stage); countdown = 3; paused = false;
   lastFrame = performance.now(); setPhase('countdown');
-  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${stage === 3 ? '<div class="lanes"></div><div class="judgment-line">下車線</div><span id="player" aria-label="玩家">你</span>' : art(game.id)}<div id="targets"></div><div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${stage === 0 ? '<button data-input="0">← 踢左</button><button data-input="1">踢右 →</button>' : stage === 3 ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : stage === 2 ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點綠色臭氣，還車廂一口好空氣。</p>'}</div><p class="play-hint" id="hint"></p>`;
+  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${stage === 3 ? '<div class="lanes"></div><div class="judgment-line">下車線</div><span id="player" aria-label="玩家">你</span>' : art(game.id)}<div id="targets"></div>${stage === 0 ? '<img id="kick" src="./assets/props/sneaker.svg" alt="踢出的球鞋">' : stage === 1 ? '<img class="spray-bottle" src="./assets/props/spray.svg" alt="芳香劑"><div id="spray-burst"></div>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${stage === 0 ? '<button data-input="0">← 踢左</button><button data-input="1">踢右 →</button>' : stage === 3 ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : stage === 2 ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點綠色臭氣，還車廂一口好空氣。</p>'}</div><p class="play-hint" id="hint"></p>`;
   renderGame();
 }
 function renderGame() {
@@ -73,7 +73,9 @@ function renderGame() {
     for (const t of active) {
       let button = targets.querySelector(`[data-target="${t.id}"]`);
       if (!button) { button = document.createElement('button'); button.className = 'odor-cloud'; button.dataset.target = t.id; button.setAttribute('aria-label','消滅臭氣'); button.textContent = '臭'; targets.append(button); }
-      button.style.left = `${t.x}%`; button.style.top = `${t.y - (game.time - t.at) * 4}%`;
+      const age = game.time - t.at;
+      button.style.left = `calc(50% + ${(t.id % 2 ? 1 : -1) * (70 + age * (8 + t.x / 8))}px)`;
+      button.style.top = `calc(100% - ${180 + age * 35}px)`;
     }
     hint.textContent = `已消滅 ${game.hits} / ${game.total} 團`;
   } else if (stage === 2) {
@@ -94,20 +96,33 @@ function effect(text, good) {
 }
 function input(value) {
   if (phase !== 'play' || paused) return;
+  const cloud = stage === 1 ? document.querySelector(`[data-target="${value}"]`) : null;
   const result = game.input(value);
+  if (result !== null && stage === 0) {
+    const kick = document.querySelector('#kick');
+    kick.style.left = value === 0 ? '26%' : '74%';
+    kick.classList.remove('kicking'); void kick.offsetWidth; kick.classList.add('kicking');
+  }
+  if (result && cloud) {
+    const burst = document.querySelector('#spray-burst');
+    burst.style.left = cloud.style.left; burst.style.top = cloud.style.top;
+    burst.classList.remove('spraying'); void burst.offsetWidth; burst.classList.add('spraying');
+  }
   if (result !== null) effect(stage === 0 ? (result ? '踢中！💥' : '踢空！') : stage === 1 ? '噴！✦' : stage === 2 ? '收！' : '閃！', result);
   renderGame();
   if (game.done) finish();
 }
 function finish() {
   if (phase !== 'play') return;
+  beep(true);
   results.push(game.result); setPhase('feedback');
   screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">本段完成</span><h2>${game.result.score}<small> / 100 分</small></h2><p>${stories[stage].feedback[game.result.score >= 60 ? 1 : 0]}</p><button class="primary" data-action="advance">${stage === 3 ? '看看我的通勤成績' : '下一段旅程'} →</button></div>`;
+  if (stage === 2) screen.querySelector('.legs-man').style.setProperty('--spread', `${40 * (1 - game.hits / game.total)}deg`);
 }
 function resultScreen() {
   setPhase('result');
   const total = results.reduce((sum, r) => sum + r.score, 0), result = ending(total);
-  screen.innerHTML = `<div class="results"><div class="ticket">本日乘車證明 / JOURNEY COMPLETE</div><p>恭喜下車！你的稱號是</p><h1>${result.title}</h1><div class="total">${total}<small> / 400</small></div><p>${result.text}</p><ol>${results.map((r,i) => `<li><span>${['讓座反應','芳香消臭','連點合腿','下車閃躲'][i]}</span><strong>${r.score} <small>/ 100</small></strong></li>`).join('')}</ol><button class="primary" data-action="share">分享我的通勤成績 ↗</button><button data-action="download">下載成績卡</button><p id="share-status" role="status"></p><div class="result-actions"><button data-action="replay">再搭一班</button><button data-action="home">回首頁</button></div></div>`;
+  screen.innerHTML = `<div class="results"><div class="ticket">本日乘車證明 / JOURNEY COMPLETE</div><div class="result-face" aria-hidden="true">${total < 160 ? '(╥﹏╥)' : total < 280 ? '(•̀ᴗ•́)و' : '(⌐■_■)✧'}</div><p>恭喜下車！你的稱號是</p><h1>${result.title}</h1><div class="total">${total}<small> / 400</small></div><p>${result.text}</p><ol>${results.map((r,i) => `<li><span>${['讓座反應','芳香消臭','連點合腿','下車閃躲'][i]}</span><strong>${r.score} <small>/ 100</small></strong></li>`).join('')}</ol><button class="primary" data-action="share">分享我的通勤成績 ↗</button><button data-action="download">下載成績卡</button><p id="share-status" role="status"></p><div class="result-actions"><button data-action="replay">再搭一班</button><button data-action="home">回首頁</button></div></div>`;
 }
 function pause() {
   if (!['play','countdown'].includes(phase) || paused) return;
