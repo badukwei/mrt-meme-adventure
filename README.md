@@ -3,7 +3,7 @@
 手機直式、固定對話與四款限時小遊戲的純前端 MVP。
 
 以 `PLAN.md` 為玩法規格。實作採原生 JavaScript + DOM/CSS，不需後端或打包工具。
-老人正式素材只使用 `elder-potbelly-v12.png`；舊版素材保留於本機，不納入版本控制。
+老人正式素材只使用 `elder-potbelly-v12.png`；舊版老人與車廂 v1 素材已移除。
 
 ## 開發步驟
 

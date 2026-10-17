@@ -1,6 +1,3 @@
 .DS_Store
 node_modules/
 dist/
-assets/characters/elder-*
-!assets/characters/elder-potbelly-v12.png
-!assets/characters/elder-potbelly-v12.prompt.md
