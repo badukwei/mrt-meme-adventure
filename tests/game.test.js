@@ -71,3 +71,33 @@ test('ending boundaries have no gaps', () => {
   assert.notEqual(ending(279).title, ending(280).title);
   assert.equal(ending(280).title, ending(400).title);
 });
+
+test('every odor target is available long enough and a perfect run earns 100', () => {
+  const game = new Challenge(1);
+  for (let step = 0; step < 250; step++) {
+    for (const target of game.activeTargets) game.input(target.id);
+    game.tick(.1);
+  }
+  game.tick(.1);
+  assert.equal(game.result.hits, 24);
+  assert.equal(game.result.score, 100);
+  assert.equal(game.result.misses, 0);
+});
+
+test('crowd arrivals are separated and all resolve inside the time limit', () => {
+  const game = new Challenge(3);
+  assert.ok(game.targets.at(-1).at + 3 < game.duration);
+  for (let i = 1; i < game.targets.length; i++) {
+    assert.ok(game.targets[i].at - game.targets[i - 1].at > 1);
+  }
+});
+
+test('new journeys do not retain previous results or input locks', () => {
+  const old = new Challenge(2);
+  old.input(); old.tick(25);
+  const fresh = new Challenge(2);
+  assert.equal(fresh.time, 0);
+  assert.equal(fresh.hits, 0);
+  assert.equal(fresh.done, false);
+  assert.equal(fresh.input(), true);
+});

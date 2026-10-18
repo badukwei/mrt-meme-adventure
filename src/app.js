@@ -6,6 +6,14 @@ const pauseButton = document.querySelector('#pause');
 const pauseDialog = document.querySelector('#pause-dialog');
 let stage = 0, line = 0, results = [], game = null, phase = 'home';
 let countdown = 3, paused = false, lastFrame = performance.now(), heldPointer = null;
+const debugParams = new URLSearchParams(location.search);
+const localDebug = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+let debugSeed = Number(debugParams.get('seed') || 1) >>> 0;
+function random() {
+  if (!localDebug || !debugParams.has('seed')) return Math.random();
+  debugSeed = (Math.imul(1664525, debugSeed) + 1013904223) >>> 0;
+  return debugSeed / 4294967296;
+}
 let muted = false;
 try { muted = localStorage.getItem('mrt-muted') === 'true'; } catch {}
 let audio;
@@ -40,6 +48,11 @@ function home() {
   setPhase('home');
   screen.innerHTML = `<div class="hero"><div class="ticket">通勤生存挑戰 / 單人乘車券</div><h1>下一站，<br><em>理智斷線。</em></h1><p>上車靠運氣，下車靠實力。<br>四場荒謬挑戰，你能帶幾分下車？</p>${art('elder')}<div class="hero-bottom"><span>約 3–5 分鐘 · 手機／電腦都能玩</span><button class="primary" data-action="board">刷卡上車 →</button><small>虛構搞笑情境。友善乘車，請勿模仿攻擊行為。</small></div></div>`;
 }
+function opening() {
+  results = []; stage = 0; line = 0; game = null; heldPointer = null;
+  setPhase('opening');
+  screen.innerHTML = `<div class="scene">${art('crowd')}</div><div class="dialogue"><span class="speaker">你 · 普通通勤族</span><p>下班了。你只想安靜搭車，平安回家。<br>車門即將關閉，今天的奇人異事卻才正要開始。</p><button class="primary" data-action="enter">走進車廂 →</button></div>`;
+}
 function dialogue() {
   setPhase('dialogue');
   const story = stories[stage];
@@ -50,7 +63,7 @@ function tutorial() {
   screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">第 ${stage + 1} 關 · ${STAGES[stage].duration} 秒</span><h2>${STAGES[stage].title}</h2><p>${stories[stage].instruction}</p><small>${stage === 0 || stage === 3 ? '也可以使用鍵盤 ← →' : '滑鼠點擊或手指點按；長按不會連發'}</small><button class="primary" data-action="start">準備好了，開始！</button></div>`;
 }
 function start() {
-  game = new Challenge(stage); countdown = 3; paused = false;
+  game = new Challenge(stage, random); countdown = 3; paused = false;
   lastFrame = performance.now(); setPhase('countdown');
   screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${stage === 3 ? '<div class="lanes"></div><div class="judgment-line">下車線</div><span id="player" aria-label="玩家">你</span>' : art(game.id)}<div id="targets"></div>${stage === 0 ? '<img id="kick" src="./assets/props/sneaker.svg" alt="踢出的球鞋">' : stage === 1 ? '<img class="spray-bottle" src="./assets/props/spray.svg" alt="芳香劑"><div id="spray-burst"></div>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${stage === 0 ? '<button data-input="0">← 踢左</button><button data-input="1">踢右 →</button>' : stage === 3 ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : stage === 2 ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點綠色臭氣，還車廂一口好空氣。</p>'}</div><p class="play-hint" id="hint"></p>`;
   renderGame();
@@ -143,7 +156,8 @@ screen.addEventListener('click', e => {
   const action = e.target.closest('[data-action]')?.dataset.action;
   if (!action) return;
   beep();
-  if (action === 'board' || action === 'replay') { results = []; stage = 0; line = 0; dialogue(); }
+  if (action === 'board' || action === 'replay') opening();
+  if (action === 'enter') dialogue();
   if (action === 'next') { line++; line < stories[stage].lines.length ? dialogue() : tutorial(); }
   if (action === 'start') start();
   if (action === 'advance') { if (stage === 3) resultScreen(); else { stage++; line = 0; dialogue(); } }
@@ -203,4 +217,13 @@ function frame(now) {
   if (now > effectUntil) { const effect = document.querySelector('#effect'); if (effect) effect.textContent = ''; }
   requestAnimationFrame(frame);
 }
-home(); requestAnimationFrame(frame);
+home();
+if (localDebug && debugParams.has('stage')) {
+  const selected = STAGES.findIndex(s => s.id === debugParams.get('stage'));
+  if (selected >= 0) {
+    stage = selected;
+    results = STAGES.slice(0, stage).map(s => ({ id: s.id, score: 0 }));
+    tutorial();
+  }
+}
+requestAnimationFrame(frame);
