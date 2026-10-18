@@ -1,5 +1,5 @@
 export const STAGES = [
-  { id: 'elder', title: '座位很多，戲也很多', duration: 25, total: 20 },
+  { id: 'elder', title: '座位很多，戲也很多', duration: 15, total: 12 },
   { id: 'odor', title: '車廂空氣保衛戰', duration: 25, total: 24 },
   { id: 'legs', title: '你的腿有買兩張票？', duration: 25, total: 70 },
   { id: 'crowd', title: '先下後上，很難嗎？', duration: 30, total: 20 },
@@ -38,10 +38,10 @@ export class Challenge {
   }
   updateRound() {
     if (this.id !== 'elder') return;
-    const round = Math.min(this.total - 1, Math.floor(this.time / (this.duration / this.total)));
+    const round = Math.floor(this.time / .65);
     if (round !== this.round) {
       this.round = round;
-      this.side = this.random() < .5 ? 0 : 1;
+      this.side = this.side === undefined ? (this.random() < .5 ? 0 : 1) : 1 - this.side;
       this.attempted = false;
     }
   }
@@ -69,11 +69,12 @@ export class Challenge {
   input(value) {
     if (this.done || this.paused) return null;
     if (this.id === 'elder') {
-      if (this.attempted || this.time - this.lastAction < .2) return null;
+      if (this.attempted || this.time - this.lastAction < .32) return null;
       this.attempted = true;
       this.lastAction = this.time;
-      const hit = value === this.side;
+      const hit = value === true;
       if (hit) this.hits++; else this.misses++;
+      if (this.hits >= this.total) this.finish();
       return hit;
     }
     if (this.id === 'odor') {

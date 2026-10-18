@@ -30,6 +30,20 @@ function beep(good = true) {
     oscillator.start(); oscillator.stop(audio.currentTime + .13);
   } catch {}
 }
+const elderSprites = ['elder-potbelly-v12.png', 'elder-v12-bruised.png', 'elder-v12-battered.png', 'elder-v12-down.png'];
+for (const file of elderSprites) { const img = new Image(); img.src = `./assets/characters/${file}`; }
+function elderState() { return game.hits >= 12 ? 3 : game.hits >= 8 ? 2 : game.hits >= 4 ? 1 : 0; }
+function kickSound(hit) {
+  if (muted) return;
+  try {
+    audio ??= new (window.AudioContext || window.webkitAudioContext)(); audio.resume();
+    const now = audio.currentTime, osc = audio.createOscillator(), gain = audio.createGain();
+    osc.type = 'triangle'; osc.frequency.setValueAtTime(hit ? 170 : 390, now);
+    osc.frequency.exponentialRampToValueAtTime(hit ? 42 : 100, now + .16);
+    gain.gain.setValueAtTime(hit ? .22 : .06, now); gain.gain.exponentialRampToValueAtTime(.001, now + .2);
+    osc.connect(gain); gain.connect(audio.destination); osc.start(); osc.stop(now + .21);
+  } catch {}
+}
 function art(kind) {
   if (kind === 'elder') return '<img class="elder character" src="./assets/characters/elder-potbelly-v12.png" alt="堅持要讓座的阿伯">';
   if (kind === 'odor') return '<div class="person odor-man" role="img" aria-label="抬起手臂的吊嘎大哥"><span class="arm left-arm"></span><span class="arm right-arm"></span><span class="head">ಠ‿ಠ</span><span class="body">汗</span></div>';
@@ -40,7 +54,7 @@ function updateRoute() {
   route.innerHTML = STAGES.map((s, i) => `<span class="${phase !== 'home' && i === stage ? 'current' : ''} ${i < results.length ? 'complete' : ''}">${['讓座','消臭','合腿','下車'][i]}</span>`).join('');
 }
 function setPhase(next) {
-  phase = next; updateRoute();
+  phase = next; screen.dataset.stage = stage === 0 ? 'elder' : 'other'; updateRoute();
   pauseButton.hidden = !['countdown', 'play'].includes(phase);
 }
 function home() {
@@ -60,12 +74,12 @@ function dialogue() {
 }
 function tutorial() {
   setPhase('tutorial');
-  screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">第 ${stage + 1} 關 · ${STAGES[stage].duration} 秒</span><h2>${STAGES[stage].title}</h2><p>${stories[stage].instruction}</p><small>${stage === 0 || stage === 3 ? '也可以使用鍵盤 ← →' : '滑鼠點擊或手指點按；長按不會連發'}</small><button class="primary" data-action="start">準備好了，開始！</button></div>`;
+  screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">第 ${stage + 1} 關 · ${STAGES[stage].duration} 秒</span><h2>${STAGES[stage].title}</h2><p>${stories[stage].instruction}</p><small>${stage === 3 ? '也可以使用鍵盤 ← →' : '滑鼠點擊或手指點按；長按不會連發'}</small><button class="primary" data-action="start">準備好了，開始！</button></div>`;
 }
 function start() {
   game = new Challenge(stage, random); countdown = 3; paused = false;
   lastFrame = performance.now(); setPhase('countdown');
-  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${stage === 3 ? '<div class="lanes"></div><div class="judgment-line">下車線</div><span id="player" aria-label="玩家">你</span>' : art(game.id)}<div id="targets"></div>${stage === 0 ? '<img id="kick" src="./assets/props/sneaker.svg" alt="踢出的球鞋">' : stage === 1 ? '<img class="spray-bottle" src="./assets/props/spray.svg" alt="芳香劑"><div id="spray-burst"></div>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${stage === 0 ? '<button data-input="0">← 踢左</button><button data-input="1">踢右 →</button>' : stage === 3 ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : stage === 2 ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點綠色臭氣，還車廂一口好空氣。</p>'}</div><p class="play-hint" id="hint"></p>`;
+  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${stage === 3 ? '<div class="lanes"></div><div class="judgment-line">下車線</div><span id="player" aria-label="玩家">你</span>' : art(game.id)}<div id="targets"></div>${stage === 0 ? '<img id="kick" src="./assets/props/kick-wojak-v1.png" alt="踢出的球鞋"><div id="impact" aria-hidden="true">✦</div>' : stage === 1 ? '<img class="spray-bottle" src="./assets/props/spray.svg" alt="芳香劑"><div id="spray-burst"></div>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${stage === 0 ? '<p>直接點老人！12 次命中擊倒 · 點空也會消耗出腳機會</p>' : stage === 3 ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : stage === 2 ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點綠色臭氣，還車廂一口好空氣。</p>'}</div><p class="play-hint" id="hint"></p>`;
   renderGame();
 }
 function renderGame() {
@@ -75,10 +89,12 @@ function renderGame() {
   document.querySelector('#countdown').textContent = phase === 'countdown' ? Math.ceil(countdown) : '';
   const hint = document.querySelector('#hint');
   if (stage === 0) {
-    const elder = screen.querySelector('.elder');
+    const elder = screen.querySelector('img.elder');
     elder.style.left = game.side === 0 ? '26%' : '74%';
+    elder.src = `./assets/characters/${elderSprites[elderState()]}`;
     elder.classList.toggle('spent', game.attempted);
-    hint.textContent = `第 ${game.round + 1} / ${game.total} 回合 · 命中 ${game.hits} 次${game.attempted ? ' · 等待下一回合' : ''}`;
+    elder.classList.toggle('down', elderState() === 3);
+    hint.textContent = `命中 ${game.hits} / 12 · ${['還在嘴硬', '輕微瘀青', '鼻青臉腫', '倒地！'][elderState()]}${game.attempted ? ' · 換位中' : ' · 快點！'}`;
   } else if (stage === 1) {
     const targets = document.querySelector('#targets');
     const active = game.activeTargets;
@@ -105,7 +121,7 @@ function effect(text, good) {
   const el = document.querySelector('#effect');
   if (!el) return;
   el.textContent = text; el.className = good ? 'good' : 'bad'; effectUntil = performance.now() + 450;
-  beep(good);
+  if (stage === 0) kickSound(good); else beep(good);
 }
 function input(value) {
   if (phase !== 'play' || paused) return;
@@ -113,7 +129,11 @@ function input(value) {
   const result = game.input(value);
   if (result !== null && stage === 0) {
     const kick = document.querySelector('#kick');
-    kick.style.left = value === 0 ? '26%' : '74%';
+    kick.style.left = game.side === 0 ? '26%' : '74%';
+    const impact = document.querySelector('#impact');
+    impact.style.left = kick.style.left;
+    impact.classList.remove('burst');
+    if (result) { void impact.offsetWidth; impact.classList.add('burst'); }
     kick.classList.remove('kicking'); void kick.offsetWidth; kick.classList.add('kicking');
   }
   if (result && cloud) {
@@ -123,13 +143,17 @@ function input(value) {
   }
   if (result !== null) effect(stage === 0 ? (result ? '踢中！💥' : '踢空！') : stage === 1 ? '噴！✦' : stage === 2 ? '收！' : '閃！', result);
   renderGame();
-  if (game.done) finish();
+  if (game.done && stage === 0 && phase === 'play') {
+    setPhase('knockdown');
+    setTimeout(() => { if (phase === 'knockdown') { phase = 'play'; finish(); } }, 850);
+  } else if (game.done) finish();
 }
 function finish() {
   if (phase !== 'play') return;
   beep(true);
   results.push(game.result); setPhase('feedback');
   screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">本段完成</span><h2>${game.result.score}<small> / 100 分</small></h2><p>${stories[stage].feedback[game.result.score >= 60 ? 1 : 0]}</p><button class="primary" data-action="advance">${stage === 3 ? '看看我的通勤成績' : '下一段旅程'} →</button></div>`;
+  if (stage === 0) { const elder = screen.querySelector('img.elder'); elder.src = `./assets/characters/${elderSprites[elderState()]}`; elder.classList.toggle('down', elderState() === 3); }
   if (stage === 2) screen.querySelector('.legs-man').style.setProperty('--spread', `${40 * (1 - game.hits / game.total)}deg`);
 }
 function resultScreen() {
@@ -165,6 +189,11 @@ screen.addEventListener('click', e => {
   if (action === 'share' || action === 'download') shareCard(action === 'share');
 });
 screen.addEventListener('pointerdown', e => {
+  if (stage === 0 && phase === 'play' && e.target.closest('#arena')) {
+    if (!e.isPrimary || e.button !== 0 || heldPointer !== null) return;
+    e.preventDefault(); heldPointer = e.pointerId;
+    input(e.target.matches('img.elder')); return;
+  }
   const target = e.target.closest('[data-input], [data-target]');
   if (!target || !e.isPrimary || e.button !== 0 || heldPointer !== null) return;
   e.preventDefault(); heldPointer = e.pointerId;
@@ -173,7 +202,7 @@ screen.addEventListener('pointerdown', e => {
 for (const event of ['pointerup','pointercancel']) window.addEventListener(event, e => { if (e.pointerId === heldPointer) heldPointer = null; });
 window.addEventListener('keydown', e => {
   if (e.repeat || paused || phase !== 'play') return;
-  if ((stage === 0 || stage === 3) && ['ArrowLeft','ArrowRight'].includes(e.key)) { e.preventDefault(); input(e.key === 'ArrowLeft' ? (stage === 0 ? 0 : -1) : 1); }
+  if (stage === 3 && ['ArrowLeft','ArrowRight'].includes(e.key)) { e.preventDefault(); input(e.key === 'ArrowLeft' ? (stage === 0 ? 0 : -1) : 1); }
   if (stage === 2 && e.code === 'Space') { e.preventDefault(); input(0); }
 });
 async function shareCard(share) {

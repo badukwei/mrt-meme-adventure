@@ -2,16 +2,28 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Challenge, ending, scoreGame } from '../src/game.js';
 
-test('elder offers 20 windows and cannot reward both buttons in one round', () => {
+test('elder direct hits require separate windows and knock down early', () => {
   const game = new Challenge(0, () => .2);
-  for (let round = 0; round < 20; round++) {
-    assert.equal(game.input(0), true);
-    assert.equal(game.input(1), null);
-    game.tick(1.25);
+  for (let hit = 0; hit < 12; hit++) {
+    assert.equal(game.input(true), true);
+    assert.equal(game.input(true), null);
+    if (hit < 11) game.tick(.651);
   }
   assert.equal(game.result.score, 100);
-  assert.equal(game.input(0), null);
-  assert.equal(game.finish(), game.result);
+  assert.ok(game.result.time < 15);
+  assert.equal(game.input(true), null);
+});
+test('elder misses consume a window and cooldown persists across a move', () => {
+  const game = new Challenge(0);
+  game.tick(.6);
+  assert.equal(game.input(false), false);
+  game.tick(.06);
+  assert.equal(game.input(true), null);
+  game.tick(.3);
+  assert.equal(game.input(true), true);
+  game.tick(15);
+  assert.equal(game.result.score, 8);
+  assert.equal(game.result.misses, 1);
 });
 test('odor targets score once and all expire before time runs out', () => {
   const game = new Challenge(1);
