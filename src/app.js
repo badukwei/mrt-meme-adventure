@@ -1,5 +1,6 @@
-import { Challenge, STAGES, ending, scoreGame } from './game.js?v=urine1';
-import { stories } from './story.js?v=urine1';
+import { RELEASE_STAGE_COUNT, DEVELOPMENT_ENDING } from './release.js?v=release1';
+import { Challenge, STAGES, ending, scoreGame } from './game.js?v=release1';
+import { stories } from './story.js?v=release1';
 const screen = document.querySelector('#screen');
 const route = document.querySelector('#route');
 const pauseButton = document.querySelector('#pause');
@@ -52,7 +53,7 @@ function art(kind) {
   return '<div class="station-sign">理智線終點站<small>LAST STOP · KEEP CALM</small></div>';
 }
 function updateRoute() {
-  route.innerHTML = STAGES.map((s, i) => `<span class="${phase !== 'home' && i === stage ? 'current' : ''} ${i < results.length ? 'complete' : ''}">${['接尿','讓座','消臭','合腿','下車'][i]}</span>`).join('');
+  route.innerHTML = STAGES.slice(0, RELEASE_STAGE_COUNT).map((s, i) => `<span class="${phase !== 'home' && i === stage ? 'current' : ''} ${i < results.length ? 'complete' : ''}">${['接尿','讓座','消臭','合腿','下車'][i]}</span>`).join('');
 }
 function setPhase(next) {
   phase = next; screen.dataset.stage = STAGES[stage].id; updateRoute();
@@ -61,7 +62,7 @@ function setPhase(next) {
 function home() {
   game = null; results = []; stage = 0; paused = false;
   setPhase('home');
-  screen.innerHTML = `<div class="hero"><div class="ticket">通勤生存挑戰 / 單人乘車券</div><h1>下一站，<br><em>理智斷線。</em></h1><p>上車靠運氣，下車靠實力。<br>五場荒謬挑戰，你能帶幾分下車？</p>${art('elder')}<div class="hero-bottom"><span>約 3–5 分鐘 · 手機／電腦都能玩</span><button class="primary" data-action="board">刷卡上車 →</button><small>虛構搞笑情境。友善乘車，請勿模仿攻擊行為。</small></div></div>`;
+  screen.innerHTML = `<div class="hero"><div class="ticket">通勤生存挑戰 / 單人乘車券</div><h1>下一站，<br><em>理智斷線。</em></h1><p>上車靠運氣，下車靠實力。<br>兩場荒謬挑戰，你能帶幾分下車？</p>${art('elder')}<div class="hero-bottom"><span>搶先體驗 · 兩關開放 · 手機／電腦都能玩</span><button class="primary" data-action="board">刷卡上車 →</button><small>虛構搞笑情境。友善乘車，請勿模仿攻擊行為。</small></div></div>`;
 }
 function opening() {
   results = []; stage = 0; line = 0; game = null; heldPointer = null;
@@ -177,11 +178,18 @@ function finish() {
   if (phase !== 'play') return;
   beep(true);
   results.push(game.result); setPhase('feedback');
-  screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">本段完成</span><h2>${game.result.score}<small> / 100 分</small></h2><p>${stories[stage].feedback[game.result.score >= 60 ? 1 : 0]}</p><button class="primary" data-action="advance">${STAGES[stage].id === 'crowd' ? '看看我的通勤成績' : '下一段旅程'} →</button></div>`;
+  screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">本段完成</span><h2>${game.result.score}<small> / 100 分</small></h2><p>${stories[stage].feedback[game.result.score >= 60 ? 1 : 0]}</p><button class="primary" data-action="advance">${stage === RELEASE_STAGE_COUNT - 1 ? '看看我的分數' : '下一段旅程'} →</button></div>`;
   if (STAGES[stage].id === 'elder') { const elder = screen.querySelector('img.elder'); elder.src = `./assets/characters/${elderSprites[elderState()]}`; elder.classList.toggle('down', elderState() === 3); }
   if (STAGES[stage].id === 'legs') screen.querySelector('.legs-man').style.setProperty('--spread', `${40 * (1 - game.hits / game.total)}deg`);
 }
 function resultScreen() {
+  if (!DEVELOPMENT_ENDING) return fullResultScreen();
+  setPhase('result');
+  const total = results.reduce((sum, r) => sum + r.score, 0);
+  screen.innerHTML = `<div class="results"><p>本次總分</p><div class="total">${total}<small> / ${RELEASE_STAGE_COUNT * 100}</small></div><h1>正在開發中</h1><div class="result-actions"><button data-action="replay">再玩一次</button><button data-action="home">回首頁</button></div></div>`;
+}
+// Preserve the full ending and share flow for the complete release.
+function fullResultScreen() {
   setPhase('result');
   const total = results.reduce((sum, r) => sum + r.score, 0), result = ending(total);
   screen.innerHTML = `<div class="results"><div class="ticket">本日乘車證明 / JOURNEY COMPLETE</div><div class="result-face" aria-hidden="true">${total < 200 ? '(╥﹏╥)' : total < 350 ? '(•̀ᴗ•́)و' : '(⌐■_■)✧'}</div><p>恭喜下車！你的稱號是</p><h1>${result.title}</h1><div class="total">${total}<small> / 500</small></div><p>${result.text}</p><ol>${results.map((r,i) => `<li><span>${['座椅接尿','讓座反應','芳香消臭','連點合腿','下車閃躲'][i]}</span><strong>${r.score} <small>/ 100</small></strong></li>`).join('')}</ol><button class="primary" data-action="share">分享我的通勤成績 ↗</button><button data-action="download">下載成績卡</button><p id="share-status" role="status"></p><div class="result-actions"><button data-action="replay">再搭一班</button><button data-action="home">回首頁</button></div></div>`;
@@ -209,7 +217,7 @@ screen.addEventListener('click', e => {
   if (action === 'enter') dialogue();
   if (action === 'next') { line++; line < stories[stage].lines.length ? dialogue() : tutorial(); }
   if (action === 'start') start();
-  if (action === 'advance') { if (STAGES[stage].id === 'crowd') resultScreen(); else { stage++; line = 0; dialogue(); } }
+  if (action === 'advance') { if (stage === RELEASE_STAGE_COUNT - 1) resultScreen(); else { stage++; line = 0; dialogue(); } }
   if (action === 'home') home();
   if (action === 'share' || action === 'download') shareCard(action === 'share');
 });
@@ -280,7 +288,7 @@ function frame(now) {
 home();
 if (localDebug && debugParams.has('stage')) {
   const selected = STAGES.findIndex(s => s.id === debugParams.get('stage'));
-  if (selected >= 0) {
+  if (selected >= 0 && selected < RELEASE_STAGE_COUNT) {
     stage = selected;
     results = STAGES.slice(0, stage).map(s => ({ id: s.id, score: 0 }));
     tutorial();
