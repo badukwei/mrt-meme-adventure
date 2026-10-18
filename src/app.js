@@ -1,5 +1,5 @@
-import { Challenge, STAGES, ending, scoreGame } from './game.js';
-import { stories } from './story.js';
+import { Challenge, STAGES, ending, scoreGame } from './game.js?v=urine1';
+import { stories } from './story.js?v=urine1';
 const screen = document.querySelector('#screen');
 const route = document.querySelector('#route');
 const pauseButton = document.querySelector('#pause');
@@ -45,22 +45,23 @@ function kickSound(hit) {
   } catch {}
 }
 function art(kind) {
+  if (kind === 'urine') return '<img class="urine-man character" src="./assets/characters/black-passenger-wojak-action-v1.png" alt="花襯衫、藍短褲的黑人 Wojak 乘客">';
   if (kind === 'elder') return '<img class="elder character" src="./assets/characters/elder-potbelly-v12.png" alt="堅持要讓座的阿伯">';
   if (kind === 'odor') return '<div class="person odor-man" role="img" aria-label="抬起手臂的吊嘎大哥"><span class="arm left-arm"></span><span class="arm right-arm"></span><span class="head">ಠ‿ಠ</span><span class="body">汗</span></div>';
   if (kind === 'legs') return '<div class="person legs-man" role="img" aria-label="張開雙腿的 89 男"><span class="head">⌐■_■</span><span class="body">89</span><span class="leg left-leg"></span><span class="leg right-leg"></span></div>';
   return '<div class="station-sign">理智線終點站<small>LAST STOP · KEEP CALM</small></div>';
 }
 function updateRoute() {
-  route.innerHTML = STAGES.map((s, i) => `<span class="${phase !== 'home' && i === stage ? 'current' : ''} ${i < results.length ? 'complete' : ''}">${['讓座','消臭','合腿','下車'][i]}</span>`).join('');
+  route.innerHTML = STAGES.map((s, i) => `<span class="${phase !== 'home' && i === stage ? 'current' : ''} ${i < results.length ? 'complete' : ''}">${['接尿','讓座','消臭','合腿','下車'][i]}</span>`).join('');
 }
 function setPhase(next) {
-  phase = next; screen.dataset.stage = stage === 0 ? 'elder' : 'other'; updateRoute();
+  phase = next; screen.dataset.stage = STAGES[stage].id; updateRoute();
   pauseButton.hidden = !['countdown', 'play'].includes(phase);
 }
 function home() {
   game = null; results = []; stage = 0; paused = false;
   setPhase('home');
-  screen.innerHTML = `<div class="hero"><div class="ticket">通勤生存挑戰 / 單人乘車券</div><h1>下一站，<br><em>理智斷線。</em></h1><p>上車靠運氣，下車靠實力。<br>四場荒謬挑戰，你能帶幾分下車？</p>${art('elder')}<div class="hero-bottom"><span>約 3–5 分鐘 · 手機／電腦都能玩</span><button class="primary" data-action="board">刷卡上車 →</button><small>虛構搞笑情境。友善乘車，請勿模仿攻擊行為。</small></div></div>`;
+  screen.innerHTML = `<div class="hero"><div class="ticket">通勤生存挑戰 / 單人乘車券</div><h1>下一站，<br><em>理智斷線。</em></h1><p>上車靠運氣，下車靠實力。<br>五場荒謬挑戰，你能帶幾分下車？</p>${art('elder')}<div class="hero-bottom"><span>約 3–5 分鐘 · 手機／電腦都能玩</span><button class="primary" data-action="board">刷卡上車 →</button><small>虛構搞笑情境。友善乘車，請勿模仿攻擊行為。</small></div></div>`;
 }
 function opening() {
   results = []; stage = 0; line = 0; game = null; heldPointer = null;
@@ -74,12 +75,12 @@ function dialogue() {
 }
 function tutorial() {
   setPhase('tutorial');
-  screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">第 ${stage + 1} 關 · ${STAGES[stage].duration} 秒</span><h2>${STAGES[stage].title}</h2><p>${stories[stage].instruction}</p><small>${stage === 3 ? '也可以使用鍵盤 ← →' : '滑鼠點擊或手指點按；長按不會連發'}</small><button class="primary" data-action="start">準備好了，開始！</button></div>`;
+  screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">第 ${stage + 1} 關 · ${STAGES[stage].duration} 秒</span><h2>${STAGES[stage].title}</h2><p>${stories[stage].instruction}</p><small>${['urine','crowd'].includes(STAGES[stage].id) ? '也可以使用鍵盤 ← →' : '滑鼠點擊或手指點按；長按不會連發'}</small><button class="primary" data-action="start">準備好了，開始！</button></div>`;
 }
 function start() {
   game = new Challenge(stage, random); countdown = 3; paused = false;
   lastFrame = performance.now(); setPhase('countdown');
-  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${stage === 3 ? '<div class="lanes"></div><div class="judgment-line">下車線</div><span id="player" aria-label="玩家">你</span>' : art(game.id)}<div id="targets"></div>${stage === 0 ? '<img id="kick" src="./assets/props/kick-wojak-v1.png" alt="踢出的球鞋"><div id="impact" aria-hidden="true">✦</div>' : stage === 1 ? '<img class="spray-bottle" src="./assets/props/spray.svg" alt="芳香劑"><div id="spray-burst"></div>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${stage === 0 ? '<p>直接點老人！12 次命中擊倒 · 點空也會消耗出腳機會</p>' : stage === 3 ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : stage === 2 ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點綠色臭氣，還車廂一口好空氣。</p>'}</div><p class="play-hint" id="hint"></p>`;
+  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${STAGES[stage].id === 'crowd' ? '<div class="lanes"></div><div class="judgment-line">下車線</div><span id="player" aria-label="玩家">你</span>' : art(game.id)}<div id="targets"></div>${game.id === 'urine' ? '<svg class="urine-stream" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="stream-path"/></svg><div id="seat-stains"></div><div class="catch-markers"><span>左</span><span>中</span><span>右</span></div><img id="bucket" src="./assets/props/urine-bucket-wojak-v1.png" alt="接尿桶">' : ''}${STAGES[stage].id === 'elder' ? '<img id="kick" src="./assets/props/kick-wojak-v1.png" alt="踢出的球鞋"><div id="impact" aria-hidden="true">✦</div>' : STAGES[stage].id === 'odor' ? '<img class="spray-bottle" src="./assets/props/spray.svg" alt="芳香劑"><div id="spray-burst"></div>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${STAGES[stage].id === 'elder' ? '<p>直接點老人！12 次命中擊倒 · 點空也會消耗出腳機會</p>' : ['urine','crowd'].includes(game.id) ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : STAGES[stage].id === 'legs' ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點綠色臭氣，還車廂一口好空氣。</p>'}</div><p class="play-hint" id="hint"></p>`;
   renderGame();
 }
 function renderGame() {
@@ -88,14 +89,38 @@ function renderGame() {
   document.querySelector('#score').textContent = `${scoreGame(game)} 分`;
   document.querySelector('#countdown').textContent = phase === 'countdown' ? Math.ceil(countdown) : '';
   const hint = document.querySelector('#hint');
-  if (stage === 0) {
+  if (game.id === 'urine') {
+    const arenaBox = document.querySelector('#arena').getBoundingClientRect();
+    const actorBox = document.querySelector('.urine-man').getBoundingClientRect();
+    const spriteWidth = Math.min(actorBox.width, actorBox.height * 2 / 3);
+    const spriteHeight = spriteWidth * 1.5;
+    const sourceX = (actorBox.left - arenaBox.left + (actorBox.width - spriteWidth) / 2 + spriteWidth * .56) / arenaBox.width * 100;
+    const sourceY = (actorBox.top - arenaBox.top + (actorBox.height - spriteHeight) / 2 + spriteHeight * .57) / arenaBox.height * 100;
+    const active = game.activeTargets;
+    const upcoming = active[0];
+    document.querySelector('#bucket').style.left = `${20 + game.lane * 30}%`;
+    document.querySelector('#targets').innerHTML = active.map(t => {
+      const progress = (game.time - t.at) / 1.5;
+      const x = sourceX + (20 + t.lane * 30 - sourceX) * progress;
+      const y = sourceY + (77 - sourceY) * progress * progress;
+      return `<img class="urine-drop" src="./assets/props/urine-drop-wojak-v1.png" style="left:${x}%;top:${y}%" alt="落向${['左','中','右'][t.lane]}側的尿滴">`;
+    }).join('');
+    const path = document.querySelector('#stream-path');
+    path.setAttribute('d', upcoming ? `M${sourceX} ${sourceY} Q${(sourceX + 20 + upcoming.lane * 30) / 2} ${sourceY} ${20 + upcoming.lane * 30} 77` : '');
+    document.querySelectorAll('.catch-markers span').forEach((el, i) => el.classList.toggle('next', upcoming?.lane === i));
+    document.querySelector('#seat-stains').innerHTML = [0,1,2].map(lane => {
+      const misses = game.targets.filter(t => t.resolved && !t.hit && t.lane === lane).length;
+      return misses ? `<span class="seat-stain" style="left:${20 + lane * 30}%;opacity:${Math.min(.8,.25+misses*.1)}"></span>` : '';
+    }).join('');
+    hint.textContent = `接住 ${game.hits} / ${game.total} · 漏接 ${game.misses}${upcoming ? ` · 下一滴：${['左','中','右'][upcoming.lane]}` : ''}`;
+  } else if (STAGES[stage].id === 'elder') {
     const elder = screen.querySelector('img.elder');
     elder.style.left = game.side === 0 ? '26%' : '74%';
     elder.src = `./assets/characters/${elderSprites[elderState()]}`;
     elder.classList.toggle('spent', game.attempted);
     elder.classList.toggle('down', elderState() === 3);
     hint.textContent = `命中 ${game.hits} / 12 · ${['還在嘴硬', '輕微瘀青', '鼻青臉腫', '倒地！'][elderState()]}${game.attempted ? ' · 換位中' : ' · 快點！'}`;
-  } else if (stage === 1) {
+  } else if (STAGES[stage].id === 'odor') {
     const targets = document.querySelector('#targets');
     const active = game.activeTargets;
     for (const child of [...targets.children]) if (!active.some(t => t.id === Number(child.dataset.target))) child.remove();
@@ -107,7 +132,7 @@ function renderGame() {
       button.style.top = `calc(100% - ${180 + age * 35}px)`;
     }
     hint.textContent = `已消滅 ${game.hits} / ${game.total} 團`;
-  } else if (stage === 2) {
+  } else if (STAGES[stage].id === 'legs') {
     screen.querySelector('.legs-man').style.setProperty('--spread', `${40 * (1 - game.hits / game.total)}deg`);
     hint.textContent = `合腿進度 ${Math.round(game.hits / game.total * 100)}% · ${game.hits} / ${game.total} 次`;
   } else {
@@ -121,13 +146,13 @@ function effect(text, good) {
   const el = document.querySelector('#effect');
   if (!el) return;
   el.textContent = text; el.className = good ? 'good' : 'bad'; effectUntil = performance.now() + 450;
-  if (stage === 0) kickSound(good); else beep(good);
+  if (STAGES[stage].id === 'elder') kickSound(good); else beep(good);
 }
 function input(value) {
   if (phase !== 'play' || paused) return;
-  const cloud = stage === 1 ? document.querySelector(`[data-target="${value}"]`) : null;
+  const cloud = STAGES[stage].id === 'odor' ? document.querySelector(`[data-target="${value}"]`) : null;
   const result = game.input(value);
-  if (result !== null && stage === 0) {
+  if (result !== null && STAGES[stage].id === 'elder') {
     const kick = document.querySelector('#kick');
     kick.style.left = game.side === 0 ? '26%' : '74%';
     const impact = document.querySelector('#impact');
@@ -141,9 +166,9 @@ function input(value) {
     burst.style.left = cloud.style.left; burst.style.top = cloud.style.top;
     burst.classList.remove('spraying'); void burst.offsetWidth; burst.classList.add('spraying');
   }
-  if (result !== null) effect(stage === 0 ? (result ? '踢中！💥' : '踢空！') : stage === 1 ? '噴！✦' : stage === 2 ? '收！' : '閃！', result);
+  if (result !== null && game.id !== 'urine') effect(STAGES[stage].id === 'elder' ? (result ? '踢中！💥' : '踢空！') : STAGES[stage].id === 'odor' ? '噴！✦' : STAGES[stage].id === 'legs' ? '收！' : '閃！', result);
   renderGame();
-  if (game.done && stage === 0 && phase === 'play') {
+  if (game.done && STAGES[stage].id === 'elder' && phase === 'play') {
     setPhase('knockdown');
     setTimeout(() => { if (phase === 'knockdown') { phase = 'play'; finish(); } }, 850);
   } else if (game.done) finish();
@@ -152,14 +177,14 @@ function finish() {
   if (phase !== 'play') return;
   beep(true);
   results.push(game.result); setPhase('feedback');
-  screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">本段完成</span><h2>${game.result.score}<small> / 100 分</small></h2><p>${stories[stage].feedback[game.result.score >= 60 ? 1 : 0]}</p><button class="primary" data-action="advance">${stage === 3 ? '看看我的通勤成績' : '下一段旅程'} →</button></div>`;
-  if (stage === 0) { const elder = screen.querySelector('img.elder'); elder.src = `./assets/characters/${elderSprites[elderState()]}`; elder.classList.toggle('down', elderState() === 3); }
-  if (stage === 2) screen.querySelector('.legs-man').style.setProperty('--spread', `${40 * (1 - game.hits / game.total)}deg`);
+  screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">本段完成</span><h2>${game.result.score}<small> / 100 分</small></h2><p>${stories[stage].feedback[game.result.score >= 60 ? 1 : 0]}</p><button class="primary" data-action="advance">${STAGES[stage].id === 'crowd' ? '看看我的通勤成績' : '下一段旅程'} →</button></div>`;
+  if (STAGES[stage].id === 'elder') { const elder = screen.querySelector('img.elder'); elder.src = `./assets/characters/${elderSprites[elderState()]}`; elder.classList.toggle('down', elderState() === 3); }
+  if (STAGES[stage].id === 'legs') screen.querySelector('.legs-man').style.setProperty('--spread', `${40 * (1 - game.hits / game.total)}deg`);
 }
 function resultScreen() {
   setPhase('result');
   const total = results.reduce((sum, r) => sum + r.score, 0), result = ending(total);
-  screen.innerHTML = `<div class="results"><div class="ticket">本日乘車證明 / JOURNEY COMPLETE</div><div class="result-face" aria-hidden="true">${total < 160 ? '(╥﹏╥)' : total < 280 ? '(•̀ᴗ•́)و' : '(⌐■_■)✧'}</div><p>恭喜下車！你的稱號是</p><h1>${result.title}</h1><div class="total">${total}<small> / 400</small></div><p>${result.text}</p><ol>${results.map((r,i) => `<li><span>${['讓座反應','芳香消臭','連點合腿','下車閃躲'][i]}</span><strong>${r.score} <small>/ 100</small></strong></li>`).join('')}</ol><button class="primary" data-action="share">分享我的通勤成績 ↗</button><button data-action="download">下載成績卡</button><p id="share-status" role="status"></p><div class="result-actions"><button data-action="replay">再搭一班</button><button data-action="home">回首頁</button></div></div>`;
+  screen.innerHTML = `<div class="results"><div class="ticket">本日乘車證明 / JOURNEY COMPLETE</div><div class="result-face" aria-hidden="true">${total < 200 ? '(╥﹏╥)' : total < 350 ? '(•̀ᴗ•́)و' : '(⌐■_■)✧'}</div><p>恭喜下車！你的稱號是</p><h1>${result.title}</h1><div class="total">${total}<small> / 500</small></div><p>${result.text}</p><ol>${results.map((r,i) => `<li><span>${['座椅接尿','讓座反應','芳香消臭','連點合腿','下車閃躲'][i]}</span><strong>${r.score} <small>/ 100</small></strong></li>`).join('')}</ol><button class="primary" data-action="share">分享我的通勤成績 ↗</button><button data-action="download">下載成績卡</button><p id="share-status" role="status"></p><div class="result-actions"><button data-action="replay">再搭一班</button><button data-action="home">回首頁</button></div></div>`;
 }
 function pause() {
   if (!['play','countdown'].includes(phase) || paused) return;
@@ -184,12 +209,12 @@ screen.addEventListener('click', e => {
   if (action === 'enter') dialogue();
   if (action === 'next') { line++; line < stories[stage].lines.length ? dialogue() : tutorial(); }
   if (action === 'start') start();
-  if (action === 'advance') { if (stage === 3) resultScreen(); else { stage++; line = 0; dialogue(); } }
+  if (action === 'advance') { if (STAGES[stage].id === 'crowd') resultScreen(); else { stage++; line = 0; dialogue(); } }
   if (action === 'home') home();
   if (action === 'share' || action === 'download') shareCard(action === 'share');
 });
 screen.addEventListener('pointerdown', e => {
-  if (stage === 0 && phase === 'play' && e.target.closest('#arena')) {
+  if (STAGES[stage].id === 'elder' && phase === 'play' && e.target.closest('#arena')) {
     if (!e.isPrimary || e.button !== 0 || heldPointer !== null) return;
     e.preventDefault(); heldPointer = e.pointerId;
     input(e.target.matches('img.elder')); return;
@@ -202,8 +227,8 @@ screen.addEventListener('pointerdown', e => {
 for (const event of ['pointerup','pointercancel']) window.addEventListener(event, e => { if (e.pointerId === heldPointer) heldPointer = null; });
 window.addEventListener('keydown', e => {
   if (e.repeat || paused || phase !== 'play') return;
-  if (stage === 3 && ['ArrowLeft','ArrowRight'].includes(e.key)) { e.preventDefault(); input(e.key === 'ArrowLeft' ? (stage === 0 ? 0 : -1) : 1); }
-  if (stage === 2 && e.code === 'Space') { e.preventDefault(); input(0); }
+  if (['urine','crowd'].includes(STAGES[stage].id) && ['ArrowLeft','ArrowRight'].includes(e.key)) { e.preventDefault(); input(e.key === 'ArrowLeft' ? -1 : 1); }
+  if (STAGES[stage].id === 'legs' && e.code === 'Space') { e.preventDefault(); input(0); }
 });
 async function shareCard(share) {
   const status = document.querySelector('#share-status');
@@ -218,8 +243,8 @@ async function shareCard(share) {
     ctx.font = 'bold 26px sans-serif'; ctx.fillText('捷運迷因冒險 / 本日乘車證明',360,110);
     ctx.font = 'bold 54px sans-serif'; ctx.fillText(result.title,360,215);
     ctx.font = 'bold 112px sans-serif'; ctx.fillText(String(total),360,360);
-    ctx.font = '24px sans-serif'; ctx.fillText('/ 400 分',360,405); ctx.fillText(result.text,360,470);
-    results.forEach((r,i) => { ctx.textAlign = 'left'; ctx.fillText(['讓座反應','芳香消臭','連點合腿','下車閃躲'][i],110,560+i*65); ctx.textAlign = 'right'; ctx.fillText(`${r.score} / 100`,610,560+i*65); });
+    ctx.font = '24px sans-serif'; ctx.fillText('/ 500 分',360,405); ctx.fillText(result.text,360,470);
+    results.forEach((r,i) => { ctx.textAlign = 'left'; ctx.fillText(['座椅接尿','讓座反應','芳香消臭','連點合腿','下車閃躲'][i],110,540+i*58); ctx.textAlign = 'right'; ctx.fillText(`${r.score} / 100`,610,540+i*58); });
     ctx.textAlign = 'center'; ctx.font = '22px sans-serif'; ctx.fillText('上車靠運氣，下車靠實力。',360,860);
     const blob = await new Promise(resolve => canvas.toBlob(resolve,'image/png'));
     if (!blob) throw new Error('image');
@@ -239,8 +264,14 @@ function frame(now) {
   else if (!paused && phase === 'play') {
     const hits = game.hits, misses = game.misses;
     game.tick(dt);
-    if (stage === 3 && game.misses > misses) effect('撞到啦！', false);
-    else if (stage === 3 && game.hits > hits) effect('成功閃過！', true);
+    if (game.id === 'urine' && (game.misses > misses || game.hits > hits)) {
+      const caught = game.hits > hits;
+      effect(caught ? '接住了！' : '座椅濕了！', caught);
+      const bucket = document.querySelector('#bucket');
+      bucket.classList.remove('caught'); if (caught) { void bucket.offsetWidth; bucket.classList.add('caught'); }
+    }
+    if (STAGES[stage].id === 'crowd' && game.misses > misses) effect('撞到啦！', false);
+    else if (STAGES[stage].id === 'crowd' && game.hits > hits) effect('成功閃過！', true);
     renderGame(); if (game.done) finish();
   }
   if (now > effectUntil) { const effect = document.querySelector('#effect'); if (effect) effect.textContent = ''; }

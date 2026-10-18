@@ -1,4 +1,5 @@
 export const STAGES = [
+  { id: 'urine', title: '這是座椅，不是馬桶', duration: 12, total: 18 },
   { id: 'elder', title: '座位很多，戲也很多', duration: 15, total: 12 },
   { id: 'odor', title: '車廂空氣保衛戰', duration: 25, total: 24 },
   { id: 'legs', title: '你的腿有買兩張票？', duration: 25, total: 70 },
@@ -12,8 +13,8 @@ export function scoreGame(game) {
   return clamp(game.hits / game.total * 100);
 }
 export function ending(total) {
-  return total < 160 ? { title: '通勤倖存者', text: '人下車了，靈魂還在下一站。' }
-    : total < 280 ? { title: '車廂秩序委員', text: '今天的捷運，多虧你還能呼吸。' }
+  return total < 200 ? { title: '通勤倖存者', text: '人下車了，靈魂還在下一站。' }
+    : total < 350 ? { title: '車廂秩序委員', text: '今天的捷運，多虧你還能呼吸。' }
       : { title: '捷運傳說', text: '你一上車，連廣播都說謝謝。' };
 }
 export class Challenge {
@@ -30,7 +31,7 @@ export class Challenge {
     this.lastAction = -Infinity;
     this.random = random;
     this.targets = Array.from({ length: this.total }, (_, id) => ({
-      id, at: this.id === 'crowd' ? id * 1.3 : id * .9,
+      id, at: this.id === 'urine' ? .3 + id * .55 : this.id === 'crowd' ? id * 1.3 : id * .9,
       lane: Math.floor(random() * 3), x: 15 + random() * 70,
       y: 20 + random() * 40, resolved: false, hit: false,
     }));
@@ -46,18 +47,18 @@ export class Challenge {
     }
   }
   get activeTargets() {
-    const lifetime = this.id === 'odor' ? 2.8 : 3;
+    const lifetime = this.id === 'urine' ? 1.5 : this.id === 'odor' ? 2.8 : 3;
     return this.targets.filter(t => !t.resolved && this.time >= t.at && this.time < t.at + lifetime);
   }
   tick(seconds) {
     if (this.done || this.paused || seconds <= 0) return;
     this.time = Math.min(this.duration, this.time + seconds);
     this.updateRound();
-    if (this.id === 'odor' || this.id === 'crowd') {
+    if (['urine', 'odor', 'crowd'].includes(this.id)) {
       for (const target of this.targets) {
-        if (!target.resolved && this.time >= target.at + (this.id === 'odor' ? 2.8 : 3)) {
+        if (!target.resolved && this.time >= target.at + (this.id === 'urine' ? 1.5 : this.id === 'odor' ? 2.8 : 3)) {
           target.resolved = true;
-          if (this.id === 'crowd' && target.lane !== this.lane) {
+          if ((this.id === 'crowd' && target.lane !== this.lane) || (this.id === 'urine' && target.lane === this.lane)) {
             target.hit = true;
             this.hits++;
           } else this.misses++;
