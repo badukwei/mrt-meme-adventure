@@ -31,3 +31,12 @@
 .seat-stain{position:absolute;top:78%;width:23%;height:5%;transform:translateX(-50%) rotate(-4deg);border-radius:45% 55% 38% 62%;background:#dcc02e;border:2px solid #a18a20;z-index:1}
 .arena.urine #effect{top:17%;z-index:8}
 @media(prefers-reduced-motion:reduce){.urine-stream path{animation:none}#bucket{transition:none}}
+
+/* Wojak sprites for the full five-stage journey. */
+#screen[data-stage="odor"] .scene,#screen[data-stage="legs"] .scene,.arena.odor,.arena.legs{background-image:url('../assets/backgrounds/urine-carriage-wojak-v1.png');background-size:100% 100%;background-position:center}
+img.odor-man{position:absolute;left:50%;bottom:2%;width:82%;height:92%;object-fit:contain;transform:translateX(-50%);pointer-events:none}
+.arena.odor #targets{z-index:3}
+.legs-man{position:absolute;left:50%;bottom:0;width:88%;height:100%;transform:translateX(-50%);object-fit:contain;pointer-events:none}
+.arena.crowd .commuter,.arena.crowd #player{width:64px;height:98px;border:0;border-radius:0;background:none;object-fit:contain}
+.arena.crowd #player img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 5px #ddf575)}
+.arena.crowd #player span{position:absolute;bottom:-8px;background:var(--lime);border:2px solid var(--ink);border-radius:8px;padding:0 8px;font-size:16px}
