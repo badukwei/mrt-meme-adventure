@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Challenge, ending, scoreGame } from '../src/game.js';
+import { Challenge, ending, scoreGame, odorPosition } from '../src/game.js';
 
 test('elder direct hits require separate windows and knock down early', () => {
   const game = new Challenge(1, () => .2);
@@ -27,12 +27,13 @@ test('elder misses consume a window and cooldown persists across a move', () => 
 });
 test('odor targets score once and all expire before time runs out', () => {
   const game = new Challenge(2);
+  game.tick(.25);
   assert.equal(game.input(0), true);
   assert.equal(game.input(0), null);
   game.tick(25);
-  assert.equal(game.misses, 23);
+  assert.equal(game.misses, 53);
   assert.equal(game.activeTargets.length, 0);
-  assert.equal(game.result.score, 4);
+  assert.equal(game.result.score, 2);
 });
 test('legs has partial credit, speed bonus, cap and ignores simultaneous inputs', () => {
   const game = new Challenge(3);
@@ -91,7 +92,7 @@ test('every odor target is available long enough and a perfect run earns 100', (
     game.tick(.1);
   }
   game.tick(.1);
-  assert.equal(game.result.hits, 24);
+  assert.equal(game.result.hits, 54);
   assert.equal(game.result.score, 100);
   assert.equal(game.result.misses, 0);
 });
@@ -142,4 +143,54 @@ test('urine movement changes catch outcome; misses leave resolved unhit drops', 
   game.tick(10); game.input(1);
   assert.equal(game.lane, 1);
   assert.equal(game.hits, 1);
+});
+
+test('odor waves escalate from two to four with shorter gaps and fair lifetimes', () => {
+  const game = new Challenge(2, () => .5);
+  assert.equal(game.targets.length, 54);
+  const waves = Array.from({length: 18}, (_, wave) => game.targets.filter(t => t.wave === wave));
+  waves.forEach((targets, wave) => {
+    assert.equal(targets.length, 2 + Math.floor(wave / 6));
+    assert.ok(targets.every(t => t.lifetime >= 1.69 && t.at + t.lifetime < game.duration));
+    if (wave) assert.ok(targets[0].lifetime < waves[wave - 1][0].lifetime);
+  });
+  assert.ok(waves[17][0].at - waves[16][0].at < waves[1][0].at - waves[0][0].at);
+  game.tick(waves[12][3].at);
+  assert.equal(game.activeTargets.filter(t => t.wave === 12).length, 4);
+  assert.ok(game.activeTargets.length >= 4);
+});
+
+test('odor motion accelerates and stays inside phone playfields', () => {
+  const early = { at: 0, slot: 0, angle: 0 };
+  const late = { ...early, at: 18 };
+  const earlyTravel = odorPosition(early, .2, 390, 440, 195, 200).x - odorPosition(early, .1, 390, 440, 195, 200).x;
+  const lateTravel = odorPosition(late, 18.2, 390, 440, 195, 200).x - odorPosition(late, 18.1, 390, 440, 195, 200).x;
+  assert.ok(lateTravel > earlyTravel * 2);
+  for (const [width, height] of [[320,280],[390,447],[620,500]]) {
+    for (const target of new Challenge(2).targets) {
+      for (let age = 0; age < target.lifetime; age += .1) {
+        const p = odorPosition(target, target.at + age, width, height, width / 2, height * .3);
+        assert.ok(p.x >= 36 && p.x <= width - 36);
+        assert.ok(p.y >= 58 && p.y <= height - 88);
+      }
+    }
+  }
+});
+
+test('odor expiry rejects late taps and pause freezes moving waves', () => {
+  const game = new Challenge(2, () => .5);
+  game.tick(.5);
+  const before = game.activeTargets.map(t => t.id);
+  const time = game.time;
+  game.paused = true; game.tick(20);
+  assert.equal(game.input(0), null);
+  assert.equal(game.time, time);
+  assert.deepEqual(game.activeTargets.map(t => t.id), before);
+  game.paused = false;
+  game.tick(game.targets[0].at + game.targets[0].lifetime - game.time);
+  assert.equal(game.input(0), null);
+  assert.equal(game.misses, 1);
+  game.tick(25);
+  assert.equal(game.misses, 54);
+  assert.equal(game.result.score, 0);
 });

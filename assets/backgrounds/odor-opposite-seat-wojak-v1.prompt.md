@@ -1,0 +1,5 @@
+# backgrounds/odor-opposite-seat-wojak-v1
+
+Generated using built-in imagegen. 
+
+Use case: illustration-story. Game background only, portrait 1024x1536. First-person seated eye-level viewpoint inside a Taiwanese metro carriage, viewer sits on one bench looking directly straight across a narrow aisle at the OPPOSITE mint-green bench. Symmetrical front-on composition, no diagonal aisle view. Opposite bench seat surface at 62 percent of image height, backrest behind, large dark rectangular window above, cream wall panels, metal grab poles only at far outer edges, a small amount of floor at bottom. Slight low seated viewpoint, close and claustrophobic, empty center for compositing a seated passenger. Rough classic Wojak/MS Paint internet meme background: uneven black contour lines, muted flat cream and teal colors, few simple shadows, no realistic textures, no polished 3D. No people, no legs or hands in foreground, no text, no advertisements, no UI, no stink, no objects in front of central bench. Opaque background.

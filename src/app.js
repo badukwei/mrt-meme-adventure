@@ -1,5 +1,5 @@
-import { Challenge, STAGES, ending, scoreGame } from './game.js?v=five2';
-import { stories } from './story.js?v=five2';
+import { Challenge, STAGES, ending, scoreGame, odorPosition } from './game.js?v=odor2';
+import { stories } from './story.js?v=odor2';
 const screen = document.querySelector('#screen');
 const route = document.querySelector('#route');
 const pauseButton = document.querySelector('#pause');
@@ -47,7 +47,7 @@ function kickSound(hit) {
 function art(kind) {
   if (kind === 'urine') return '<img class="urine-man character" src="./assets/characters/black-passenger-wojak-action-v1.png" alt="花襯衫、藍短褲的黑人 Wojak 乘客">';
   if (kind === 'elder') return '<img class="elder character" src="./assets/characters/elder-potbelly-v12.png" alt="堅持要讓座的阿伯">';
-  if (kind === 'odor') return '<img class="odor-man character" src="./assets/characters/odor-wojak-v1.png" alt="雙手抬起、穿白色吊嘎的 Wojak 大哥">';
+  if (kind === 'odor') return '<img class="odor-man character" src="./assets/characters/odor-seated-wojak-v2.png" alt="坐在正對面、雙手抬起的 Wojak 吊嘎大哥">';
   if (kind === 'legs') return '<img class="legs-man character" src="./assets/characters/legs-wojak-open-v1.png" alt="張開雙腿的 Wojak 乘客" data-pose="0">';
   return '<div class="station-sign">理智線終點站<small>LAST STOP · KEEP CALM</small></div>';
 }
@@ -80,7 +80,7 @@ function tutorial() {
 function start() {
   game = new Challenge(stage, random); countdown = 3; paused = false;
   lastFrame = performance.now(); setPhase('countdown');
-  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${STAGES[stage].id === 'crowd' ? '<div class="lanes"></div><div class="judgment-line">下車線</div><div id="player" aria-label="玩家"><img src="./assets/characters/commuter-wojak-v1.png" alt=""><span>你</span></div>' : art(game.id)}<div id="targets"></div>${game.id === 'urine' ? '<svg class="urine-stream" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="stream-path"/></svg><div id="seat-stains"></div><div class="catch-markers"><span>左</span><span>中</span><span>右</span></div><img id="bucket" src="./assets/props/urine-bucket-wojak-v1.png" alt="接尿桶">' : ''}${STAGES[stage].id === 'elder' ? '<img id="kick" src="./assets/props/kick-wojak-v1.png" alt="踢出的球鞋"><div id="impact" aria-hidden="true">✦</div>' : STAGES[stage].id === 'odor' ? '<img class="spray-bottle" src="./assets/props/spray.svg" alt="芳香劑"><div id="spray-burst"></div>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${STAGES[stage].id === 'elder' ? '<p>直接點老人！12 次命中擊倒 · 點空也會消耗出腳機會</p>' : ['urine','crowd'].includes(game.id) ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : STAGES[stage].id === 'legs' ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點綠色臭氣，還車廂一口好空氣。</p>'}</div><p class="play-hint" id="hint"></p>`;
+  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${STAGES[stage].id === 'crowd' ? '<div class="lanes"></div><div class="judgment-line">下車線</div><div id="player" aria-label="玩家"><img src="./assets/characters/commuter-wojak-v1.png" alt=""><span>你</span></div>' : art(game.id)}<div id="targets"></div>${game.id === 'urine' ? '<svg class="urine-stream" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="stream-path"/></svg><div id="seat-stains"></div><div class="catch-markers"><span>左</span><span>中</span><span>右</span></div><img id="bucket" src="./assets/props/urine-bucket-wojak-v1.png" alt="接尿桶">' : ''}${STAGES[stage].id === 'elder' ? '<img id="kick" src="./assets/props/kick-wojak-v1.png" alt="踢出的球鞋"><div id="impact" aria-hidden="true">✦</div>' : STAGES[stage].id === 'odor' ? '<img class="spray-bottle" src="./assets/props/deodorizer-wojak-v1.png" alt="Wojak 除臭劑"><svg class="spray-jet" aria-hidden="true"><path/></svg><div id="spray-burst"></div>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${STAGES[stage].id === 'elder' ? '<p>直接點老人！12 次命中擊倒 · 點空也會消耗出腳機會</p>' : ['urine','crowd'].includes(game.id) ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : STAGES[stage].id === 'legs' ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點掉 Wojak 臭氣！越後面越快，一團一噴。</p>'}</div><p class="play-hint" id="hint"></p>`;
   renderGame();
 }
 function renderLegPose() {
@@ -133,18 +133,27 @@ function renderGame() {
     for (const child of [...targets.children]) if (!active.some(t => t.id === Number(child.dataset.target))) child.remove();
     for (const t of active) {
       let button = targets.querySelector(`[data-target="${t.id}"]`);
-      if (!button) { button = document.createElement('button'); button.className = 'odor-cloud'; button.dataset.target = t.id; button.setAttribute('aria-label','消滅臭氣'); button.textContent = '臭'; targets.append(button); }
-      const age = game.time - t.at;
+      if (!button) {
+        button = document.createElement('button'); button.className = 'odor-cloud';
+        button.dataset.target = t.id; button.setAttribute('aria-label', `消滅臭氣 ${t.id + 1}`);
+        button.innerHTML = '<img src="./assets/props/odor-cloud-wojak-v1.png" alt="" draggable="false">';
+        targets.append(button);
+      }
       const arena = document.querySelector('#arena');
-      const actor = screen.querySelector('.odor-man');
-      const width = Math.min(actor.clientWidth, actor.clientHeight * 2 / 3);
+      const actorBox = screen.querySelector('.odor-man').getBoundingClientRect();
+      const arenaBox = arena.getBoundingClientRect();
+      const width = Math.min(actorBox.width, actorBox.height * 2 / 3);
       const height = width * 1.5;
-      const side = t.id % 2 ? 1 : -1;
-      const x = arena.clientWidth / 2 + side * (width * .22 + age * (8 + t.x / 15));
-      button.style.left = `${Math.max(36, Math.min(arena.clientWidth - 36, x))}px`;
-      button.style.top = `${Math.max(45, arena.clientHeight * .98 - (actor.clientHeight + height) / 2 + height * .23 - age * 12)}px`;
+      const side = t.slot % 2 ? 1 : -1;
+      const sourceX = arena.clientWidth / 2 + side * width * .23;
+      const sourceY = actorBox.top - arenaBox.top + (actorBox.height - height) / 2 + height * .25;
+      const point = odorPosition(t, game.time, arena.clientWidth, arena.clientHeight, sourceX, sourceY);
+      button.style.left = `${point.x}px`;
+      button.style.top = `${point.y}px`;
+      button.classList.toggle('urgent', t.at + t.lifetime - game.time < .65);
     }
-    hint.textContent = `已消滅 ${game.hits} / ${game.total} 團`;
+    const intensity = game.time < 9 ? '雙團來襲' : game.time < 17 ? '三團加速' : '四團暴走';
+    hint.textContent = `${intensity} · 消滅 ${game.hits}/${game.total} · 漏掉 ${game.misses}`;
   } else if (STAGES[stage].id === 'legs') {
     renderLegPose();
     hint.textContent = `合腿進度 ${Math.round(game.hits / game.total * 100)}% · ${game.hits} / ${game.total} 次`;
@@ -178,6 +187,13 @@ function input(value) {
     const burst = document.querySelector('#spray-burst');
     burst.style.left = cloud.style.left; burst.style.top = cloud.style.top;
     burst.classList.remove('spraying'); void burst.offsetWidth; burst.classList.add('spraying');
+    const arena = document.querySelector('#arena');
+    const jet = screen.querySelector('.spray-jet');
+    jet.setAttribute('viewBox', `0 0 ${arena.clientWidth} ${arena.clientHeight}`);
+    jet.querySelector('path').setAttribute('d', `M${arena.clientWidth - 80} ${arena.clientHeight - 115} L${parseFloat(cloud.style.left)} ${parseFloat(cloud.style.top)}`);
+    jet.classList.remove('spraying'); void jet.getBoundingClientRect(); jet.classList.add('spraying');
+    const bottle = screen.querySelector('.spray-bottle');
+    bottle.classList.remove('pumping'); void bottle.offsetWidth; bottle.classList.add('pumping');
   }
   if (result !== null && game.id !== 'urine') effect(STAGES[stage].id === 'elder' ? (result ? '踢中！💥' : '踢空！') : STAGES[stage].id === 'odor' ? '噴！✦' : STAGES[stage].id === 'legs' ? '收！' : '閃！', result);
   renderGame();
@@ -283,6 +299,7 @@ function frame(now) {
       const bucket = document.querySelector('#bucket');
       bucket.classList.remove('caught'); if (caught) { void bucket.offsetWidth; bucket.classList.add('caught'); }
     }
+    if (game.id === 'odor' && game.misses > misses) effect('臭氣擴散！', false);
     if (STAGES[stage].id === 'crowd' && game.misses > misses) effect('撞到啦！', false);
     else if (STAGES[stage].id === 'crowd' && game.hits > hits) effect('成功閃過！', true);
     renderGame(); if (game.done) finish();
