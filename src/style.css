@@ -56,3 +56,19 @@ img.odor-man{position:absolute;left:50%;bottom:2%;width:82%;height:92%;object-fi
 @keyframes odor-pump{50%{transform:translateY(5px) rotate(-19deg)}}
 @keyframes odor-jet{0%,35%{opacity:.8}100%{opacity:0}}
 @media(prefers-reduced-motion:reduce){.spray-bottle.pumping{animation:none}}
+
+/* Neighbor-seat view with independent hand and reaction layers. */
+#screen[data-stage="legs"] .scene,.arena.legs{background-image:url('../assets/backgrounds/legs-seatmate-wojak-v1.png');background-size:100% 100%;background-position:center}
+#screen[data-stage="legs"] .legs-man{left:57%;width:84%;height:87%;bottom:0;transform:translateX(-50%) scaleX(-1);z-index:2}
+.legs-taunt{position:absolute;left:4%;top:3%;max-width:90%;padding:9px 13px;border:2px solid var(--ink);border-radius:14px 14px 14px 0;background:var(--paper);font-size:15px;font-weight:800;z-index:4;pointer-events:none}
+#push-hand{position:absolute;width:58%;left:-15%;top:58%;height:auto;z-index:5;pointer-events:none;opacity:0;transform:translate(-32px,8px)}
+#push-hand.pushing{animation:leg-hand-push .22s ease-out}
+.legs-man.pushing{animation:leg-resist .22s ease-out}
+#push-impact{position:absolute;z-index:6;font-size:40px;color:#fff4a0;transform:translate(-50%,-50%);text-shadow:2px 2px #123d42;opacity:0;pointer-events:none}
+#push-impact.pushing{animation:leg-impact .22s ease-out}
+.arena.legs #effect{top:auto;bottom:5%;font-size:22px;z-index:7}
+#screen[data-stage="legs"] .dialogue p{white-space:pre-line}
+@keyframes leg-hand-push{0%{opacity:1;transform:translate(-32px,8px)}40%,65%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(-24px,6px)}}
+@keyframes leg-resist{45%{transform:translateX(calc(-50% + 5px)) scaleX(-1) rotate(-1deg)}}
+@keyframes leg-impact{35%,65%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.legs-man.pushing{animation:none}#push-hand.pushing{animation:leg-impact .22s;transform:none}}

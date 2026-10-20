@@ -1,5 +1,5 @@
-import { Challenge, STAGES, ending, scoreGame, odorPosition } from './game.js?v=odor2';
-import { stories } from './story.js?v=odor2';
+import { Challenge, STAGES, ending, scoreGame, odorPosition } from './game.js?v=legs2';
+import { stories } from './story.js?v=legs2';
 const screen = document.querySelector('#screen');
 const route = document.querySelector('#route');
 const pauseButton = document.querySelector('#pause');
@@ -31,7 +31,7 @@ function beep(good = true) {
   } catch {}
 }
 const elderSprites = ['elder-potbelly-v12.png', 'elder-v12-bruised.png', 'elder-v12-battered.png', 'elder-v12-down.png'];
-for (const file of elderSprites) { const img = new Image(); img.src = `./assets/characters/${file}`; }
+for (const file of [...elderSprites, 'legs-wojak-open-v2.png', 'legs-wojak-half-v2.png', 'legs-wojak-closed-v2.png']) { const img = new Image(); img.src = `./assets/characters/${file}`; }
 function elderState() { return game.hits >= 12 ? 3 : game.hits >= 8 ? 2 : game.hits >= 4 ? 1 : 0; }
 function kickSound(hit) {
   if (muted) return;
@@ -48,7 +48,7 @@ function art(kind) {
   if (kind === 'urine') return '<img class="urine-man character" src="./assets/characters/black-passenger-wojak-action-v1.png" alt="花襯衫、藍短褲的黑人 Wojak 乘客">';
   if (kind === 'elder') return '<img class="elder character" src="./assets/characters/elder-potbelly-v12.png" alt="堅持要讓座的阿伯">';
   if (kind === 'odor') return '<img class="odor-man character" src="./assets/characters/odor-seated-wojak-v2.png" alt="坐在正對面、雙手抬起的 Wojak 吊嘎大哥">';
-  if (kind === 'legs') return '<img class="legs-man character" src="./assets/characters/legs-wojak-open-v1.png" alt="張開雙腿的 Wojak 乘客" data-pose="0">';
+  if (kind === 'legs') return '<img class="legs-man character" src="./assets/characters/legs-wojak-open-v2.png" alt="張開雙腿的 Wojak 乘客" data-pose="0">';
   return '<div class="station-sign">理智線終點站<small>LAST STOP · KEEP CALM</small></div>';
 }
 function updateRoute() {
@@ -80,15 +80,38 @@ function tutorial() {
 function start() {
   game = new Challenge(stage, random); countdown = 3; paused = false;
   lastFrame = performance.now(); setPhase('countdown');
-  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${STAGES[stage].id === 'crowd' ? '<div class="lanes"></div><div class="judgment-line">下車線</div><div id="player" aria-label="玩家"><img src="./assets/characters/commuter-wojak-v1.png" alt=""><span>你</span></div>' : art(game.id)}<div id="targets"></div>${game.id === 'urine' ? '<svg class="urine-stream" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="stream-path"/></svg><div id="seat-stains"></div><div class="catch-markers"><span>左</span><span>中</span><span>右</span></div><img id="bucket" src="./assets/props/urine-bucket-wojak-v1.png" alt="接尿桶">' : ''}${STAGES[stage].id === 'elder' ? '<img id="kick" src="./assets/props/kick-wojak-v1.png" alt="踢出的球鞋"><div id="impact" aria-hidden="true">✦</div>' : STAGES[stage].id === 'odor' ? '<img class="spray-bottle" src="./assets/props/deodorizer-wojak-v1.png" alt="Wojak 除臭劑"><svg class="spray-jet" aria-hidden="true"><path/></svg><div id="spray-burst"></div>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${STAGES[stage].id === 'elder' ? '<p>直接點老人！12 次命中擊倒 · 點空也會消耗出腳機會</p>' : ['urine','crowd'].includes(game.id) ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : STAGES[stage].id === 'legs' ? '<button data-input="0" class="primary">合起來！</button>' : '<p>點掉 Wojak 臭氣！越後面越快，一團一噴。</p>'}</div><p class="play-hint" id="hint"></p>`;
+  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${STAGES[stage].id === 'crowd' ? '<div class="lanes"></div><div class="judgment-line">下車線</div><div id="player" aria-label="玩家"><img src="./assets/characters/commuter-wojak-v1.png" alt=""><span>你</span></div>' : art(game.id)}<div id="targets"></div>${game.id === 'urine' ? '<svg class="urine-stream" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="stream-path"/></svg><div id="seat-stains"></div><div class="catch-markers"><span>左</span><span>中</span><span>右</span></div><img id="bucket" src="./assets/props/urine-bucket-wojak-v1.png" alt="接尿桶">' : ''}${STAGES[stage].id === 'elder' ? '<img id="kick" src="./assets/props/kick-wojak-v1.png" alt="踢出的球鞋"><div id="impact" aria-hidden="true">✦</div>' : STAGES[stage].id === 'odor' ? '<img class="spray-bottle" src="./assets/props/deodorizer-wojak-v1.png" alt="Wojak 除臭劑"><svg class="spray-jet" aria-hidden="true"><path/></svg><div id="spray-burst"></div>' : ''}${game.id === 'legs' ? '<div class="legs-taunt" id="legs-taunt"></div><img id="push-hand" src="./assets/props/push-hand-wojak-v1.png" alt="推膝蓋的手掌"><span id="push-impact" aria-hidden="true">✦</span>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${STAGES[stage].id === 'elder' ? '<p>直接點老人！12 次命中擊倒 · 點空也會消耗出腳機會</p>' : ['urine','crowd'].includes(game.id) ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : STAGES[stage].id === 'legs' ? '<button data-input="0" class="primary">推回去！</button>' : '<p>點掉 Wojak 臭氣！越後面越快，一團一噴。</p>'}</div><p class="play-hint" id="hint"></p>`;
   renderGame();
 }
 function renderLegPose() {
   const actor = screen.querySelector('.legs-man');
   const pose = game.hits >= game.total ? 2 : game.hits >= game.total / 2 ? 1 : 0;
-  actor.dataset.pose = pose;
-  actor.src = `./assets/characters/legs-wojak-${['open', 'half', 'closed'][pose]}-v1.png`;
-  actor.setAttribute('aria-label', ['張開雙腿的 Wojak 乘客', '雙腿正在合攏的 Wojak 乘客', '已合起雙腿的 Wojak 乘客'][pose]);
+  if (actor.dataset.pose !== String(pose) || !actor.src.endsWith('-v2.png')) {
+    actor.dataset.pose = pose;
+    actor.src = `./assets/characters/legs-wojak-${['open', 'half', 'closed'][pose]}-v2.png`;
+  }
+  actor.alt = ['囂張張腿的 89 男', '氣到臉紅、咬牙抵抗的 89 男', '雙腿合攏、氣昏的 89 男'][pose];
+  const taunt = document.querySelector('#legs-taunt');
+  if (taunt) taunt.textContent = pose === 2 ? '你給我記住……我先暈一下。' : pose === 1 ?
+    (game.hits < 55 ? '我有練腿欸！你不要逼我！' : '下次找你算帳！先讓我撐住！') :
+    (game.hits < 15 ? '這不是開腿，是我的結界。' : '欸欸！你推到我的氣場了！');
+}
+function pushLegs() {
+  const actor = screen.querySelector('.legs-man'), arena = document.querySelector('#arena');
+  const box = actor.getBoundingClientRect(), area = arena.getBoundingClientRect();
+  const width = Math.min(box.width, box.height * 640 / 724), height = width * 724 / 640;
+  const x = box.left - area.left + (box.width - width) / 2 + width * .35;
+  const y = box.top - area.top + (box.height - height) / 2 + height * .62;
+  const hand = document.querySelector('#push-hand');
+  const handWidth = Math.min(240, arena.clientWidth * .6);
+  hand.style.width = `${handWidth}px`;
+  hand.style.left = `${x - handWidth * .85}px`;
+  hand.style.top = `${y - handWidth * 2 / 3 * .35}px`;
+  const impact = document.querySelector('#push-impact');
+  impact.style.left = `${x}px`; impact.style.top = `${y}px`;
+  for (const element of [hand, actor, impact]) {
+    element.classList.remove('pushing'); void element.offsetWidth; element.classList.add('pushing');
+  }
 }
 function renderGame() {
   if (!game) return;
@@ -195,11 +218,18 @@ function input(value) {
     const bottle = screen.querySelector('.spray-bottle');
     bottle.classList.remove('pumping'); void bottle.offsetWidth; bottle.classList.add('pumping');
   }
-  if (result !== null && game.id !== 'urine') effect(STAGES[stage].id === 'elder' ? (result ? '踢中！💥' : '踢空！') : STAGES[stage].id === 'odor' ? '噴！✦' : STAGES[stage].id === 'legs' ? '收！' : '閃！', result);
+  if (result && game.id === 'legs') pushLegs();
+  if (result !== null && game.id !== 'urine') effect(STAGES[stage].id === 'elder' ? (result ? '踢中！💥' : '踢空！') : STAGES[stage].id === 'odor' ? '噴！✦' : STAGES[stage].id === 'legs' ? '擠回去！' : '閃！', result);
   renderGame();
   if (game.done && STAGES[stage].id === 'elder' && phase === 'play') {
     setPhase('knockdown');
     setTimeout(() => { if (phase === 'knockdown') { phase = 'play'; finish(); } }, 850);
+  } else if (game.done && game.id === 'legs') {
+    setPhase('legs-faint');
+    screen.querySelector('.legs-man').classList.add('fainted');
+    screen.querySelector('[data-input]').disabled = true;
+    effect('氣場已收納。本人已斷線。', true);
+    setTimeout(() => { if (phase === 'legs-faint') { phase = 'play'; finish(); } }, 1100);
   } else if (game.done) finish();
 }
 function finish() {
