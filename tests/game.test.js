@@ -50,19 +50,25 @@ test('legs has partial credit, speed bonus, cap and ignores simultaneous inputs'
   for (let i = 0; i < 70; i++) { slow.tick(.06); slow.input(); }
   assert.ok(slow.result.score < game.result.score);
 });
-test('crowd resolves each person once, permits passage and clamps lanes', () => {
-  const game = new Challenge(4, () => 0);
-  game.input(1); game.input(1);
-  assert.equal(game.lane, 2);
-  for (let i = 0; i < 300; i++) game.tick(.1);
-  game.tick(.1);
-  assert.equal(game.result.score, 100);
-  assert.ok(game.targets.every(t => t.resolved));
-  const collision = new Challenge(4, () => 0);
-  collision.input(-1);
-  collision.tick(30);
-  assert.equal(collision.result.score, 0);
-  assert.equal(collision.misses, 20);
+test('crowd waves resolve once and reward only the safe lane', () => {
+  for (const perfect of [true, false]) {
+    const game = new Challenge(4, () => .3);
+    game.input(9); assert.equal(game.lane, 2);
+    game.input(-9); assert.equal(game.lane, 0);
+    for (const target of game.targets) {
+      const lane = perfect ? target.safeLane : target.lanes[0];
+      while (game.lane !== lane) game.input(Math.sign(lane - game.lane));
+      game.tick(target.at + target.lifetime - game.time + .00001);
+      const count = game.hits + game.misses;
+      game.tick(.00001);
+      assert.equal(game.hits + game.misses, count);
+    }
+    game.tick(24);
+    assert.equal(game.result.score, perfect ? 100 : 0);
+    assert.equal(game.hits, perfect ? 32 : 0);
+    assert.equal(game.misses, perfect ? 0 : 32);
+    assert.ok(game.targets.every(t => t.resolved));
+  }
 });
 test('pause freezes time and input; all idle games complete with bounded scores', () => {
   for (let index = 0; index < 5; index++) {
@@ -97,11 +103,23 @@ test('every odor target is available long enough and a perfect run earns 100', (
   assert.equal(game.result.misses, 0);
 });
 
-test('crowd arrivals are separated and all resolve inside the time limit', () => {
-  const game = new Challenge(4);
-  assert.ok(game.targets.at(-1).at + 3 < game.duration);
-  for (let i = 1; i < game.targets.length; i++) {
-    assert.ok(game.targets[i].at - game.targets[i - 1].at > 1);
+test('crowd leaves a changing gap, accelerates and preserves reaction time', () => {
+  for (let seed = 1; seed <= 30; seed++) {
+    let state = seed;
+    const game = new Challenge(4, () => { state = (Math.imul(state,1664525)+1013904223) >>> 0; return state / 4294967296; });
+    assert.equal(game.targets.length,32);
+    assert.ok(game.targets.at(-1).at + game.targets.at(-1).lifetime < game.duration);
+    for (const [i,t] of game.targets.entries()) {
+      assert.equal(new Set(t.lanes).size,2);
+      assert.ok(!t.lanes.includes(t.safeLane));
+      assert.ok(t.lifetime >= .649);
+      if(i) {
+        const prev=game.targets[i-1];
+        assert.notEqual(t.safeLane,prev.safeLane);
+        assert.ok(t.lifetime < prev.lifetime);
+        assert.ok(t.at+t.lifetime-prev.at-prev.lifetime >= .62);
+      }
+    }
   }
 });
 

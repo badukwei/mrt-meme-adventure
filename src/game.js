@@ -3,9 +3,19 @@ export const STAGES = [
   { id: 'elder', title: '座位很多，戲也很多', duration: 15, total: 12 },
   { id: 'odor', title: '車廂空氣保衛戰', duration: 25, total: 54 },
   { id: 'legs', title: '你的腿有買兩張票？', duration: 25, total: 70 },
-  { id: 'crowd', title: '先下後上，很難嗎？', duration: 30, total: 20 },
+  { id: 'crowd', title: '我還沒下車，你們全上來了？！', duration: 24, total: 32 },
 ];
 const clamp = value => Math.max(0, Math.min(100, Math.round(value)));
+function crowdTargets(random) {
+  let safeLane = Math.floor(random() * 3);
+  return Array.from({ length: 32 }, (_, id) => {
+    if (id) safeLane = (safeLane + 1 + Math.floor(random() * 2)) % 3;
+    const lifetime = 1.4 - id / 31 * .75;
+    const deadline = 1.7 + id * .78 - .0025 * id * (id - 1);
+    return { id, at: deadline - lifetime, lifetime, safeLane,
+      lanes: [0, 1, 2].filter(lane => lane !== safeLane), resolved: false, hit: false };
+  });
+}
 function odorTargets(random) {
   const targets = [];
   for (let wave = 0; wave < 18; wave++) {
@@ -59,7 +69,7 @@ export class Challenge {
     this.attempted = false;
     this.lastAction = -Infinity;
     this.random = random;
-    this.targets = this.id === 'odor' ? odorTargets(random) : Array.from({ length: this.total }, (_, id) => ({
+    this.targets = this.id === 'odor' ? odorTargets(random) : this.id === 'crowd' ? crowdTargets(random) : Array.from({ length: this.total }, (_, id) => ({
       id, at: this.id === 'urine' ? .3 + id * .55 : this.id === 'crowd' ? id * 1.3 : id * .9,
       lane: Math.floor(random() * 3), x: 15 + random() * 70,
       y: 20 + random() * 40, resolved: false, hit: false,
@@ -87,7 +97,7 @@ export class Challenge {
       for (const target of this.targets) {
         if (!target.resolved && this.time >= target.at + (target.lifetime ?? (this.id === 'urine' ? 1.5 : 3))) {
           target.resolved = true;
-          if ((this.id === 'crowd' && target.lane !== this.lane) || (this.id === 'urine' && target.lane === this.lane)) {
+          if ((this.id === 'crowd' && !target.lanes.includes(this.lane)) || (this.id === 'urine' && target.lane === this.lane)) {
             target.hit = true;
             this.hits++;
           } else this.misses++;

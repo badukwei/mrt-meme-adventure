@@ -1,5 +1,5 @@
-import { Challenge, STAGES, ending, scoreGame, odorPosition } from './game.js?v=legs2';
-import { stories } from './story.js?v=legs2';
+import { Challenge, STAGES, ending, scoreGame, odorPosition } from './game.js?v=crowd2';
+import { stories } from './story.js?v=crowd2';
 const screen = document.querySelector('#screen');
 const route = document.querySelector('#route');
 const pauseButton = document.querySelector('#pause');
@@ -49,6 +49,8 @@ function art(kind) {
   if (kind === 'elder') return '<img class="elder character" src="./assets/characters/elder-potbelly-v12.png" alt="堅持要讓座的阿伯">';
   if (kind === 'odor') return '<img class="odor-man character" src="./assets/characters/odor-seated-wojak-v2.png" alt="坐在正對面、雙手抬起的 Wojak 吊嘎大哥">';
   if (kind === 'legs') return '<img class="legs-man character" src="./assets/characters/legs-wojak-open-v2.png" alt="張開雙腿的 Wojak 乘客" data-pose="0">';
+  if (kind === 'crowd') return '<img class="boarding-scene" src="./assets/backgrounds/boarding-rush-wojak-v1.png" alt="車門一開，大批 Wojak 乘客擋住上班族、搶著上車">';
+  if (kind === 'hero') return '<img class="office-hero" src="./assets/characters/office-hero-front-v1.png" alt="黑眼圈、皺襯衫，拎著公事包的疲憊中年上班族">';
   return '<div class="station-sign">理智線終點站<small>LAST STOP · KEEP CALM</small></div>';
 }
 function updateRoute() {
@@ -66,7 +68,7 @@ function home() {
 function opening() {
   results = []; stage = 0; line = 0; game = null; heldPointer = null;
   setPhase('opening');
-  screen.innerHTML = `<div class="scene">${art('crowd')}</div><div class="dialogue"><span class="speaker">你 · 普通通勤族</span><p>下班了。你只想安靜搭車，平安回家。<br>車門即將關閉，今天的奇人異事卻才正要開始。</p><button class="primary" data-action="enter">走進車廂 →</button></div>`;
+  screen.innerHTML = `<div class="scene">${art('hero')}</div><div class="dialogue"><span class="speaker">你 · 下班只剩半條命的上班族</span><p>襯衫皺了，黑眼圈深了，公事包比人生還重。你只想搭車回家。<br>車門即將關閉，今天的奇人異事卻才正要開始。</p><button class="primary" data-action="enter">走進車廂 →</button></div>`;
 }
 function dialogue() {
   setPhase('dialogue');
@@ -80,7 +82,7 @@ function tutorial() {
 function start() {
   game = new Challenge(stage, random); countdown = 3; paused = false;
   lastFrame = performance.now(); setPhase('countdown');
-  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${STAGES[stage].id === 'crowd' ? '<div class="lanes"></div><div class="judgment-line">下車線</div><div id="player" aria-label="玩家"><img src="./assets/characters/commuter-wojak-v1.png" alt=""><span>你</span></div>' : art(game.id)}<div id="targets"></div>${game.id === 'urine' ? '<svg class="urine-stream" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="stream-path"/></svg><div id="seat-stains"></div><div class="catch-markers"><span>左</span><span>中</span><span>右</span></div><img id="bucket" src="./assets/props/urine-bucket-wojak-v1.png" alt="接尿桶">' : ''}${STAGES[stage].id === 'elder' ? '<img id="kick" src="./assets/props/kick-wojak-v1.png" alt="踢出的球鞋"><div id="impact" aria-hidden="true">✦</div>' : STAGES[stage].id === 'odor' ? '<img class="spray-bottle" src="./assets/props/deodorizer-wojak-v1.png" alt="Wojak 除臭劑"><svg class="spray-jet" aria-hidden="true"><path/></svg><div id="spray-burst"></div>' : ''}${game.id === 'legs' ? '<div class="legs-taunt" id="legs-taunt"></div><img id="push-hand" src="./assets/props/push-hand-wojak-v1.png" alt="推膝蓋的手掌"><span id="push-impact" aria-hidden="true">✦</span>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${STAGES[stage].id === 'elder' ? '<p>直接點老人！12 次命中擊倒 · 點空也會消耗出腳機會</p>' : ['urine','crowd'].includes(game.id) ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : STAGES[stage].id === 'legs' ? '<button data-input="0" class="primary">推回去！</button>' : '<p>點掉 Wojak 臭氣！越後面越快，一團一噴。</p>'}</div><p class="play-hint" id="hint"></p>`;
+  screen.innerHTML = `<div class="hud"><span id="time"></span><strong id="score"></strong></div><div class="arena ${game.id}" id="arena">${STAGES[stage].id === 'crowd' ? '<div class="boarding-queue" aria-hidden="true">' + Array.from({length:8}, (_, i) => `<img src="./assets/characters/boarding-${i % 4}-v1.png" alt="">`).join('') + '</div><div class="lanes"></div><div class="crowd-warning" id="crowd-warning"></div><div class="judgment-line">車門就在前面 ↑ 我要下車</div><div id="player" aria-label="疲憊上班族，朝車外移動"><img src="./assets/characters/office-hero-back-v1.png" alt=""><span>下班了，借過！</span></div>' : art(game.id)}<div id="targets"></div>${game.id === 'urine' ? '<svg class="urine-stream" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="stream-path"/></svg><div id="seat-stains"></div><div class="catch-markers"><span>左</span><span>中</span><span>右</span></div><img id="bucket" src="./assets/props/urine-bucket-wojak-v1.png" alt="接尿桶">' : ''}${STAGES[stage].id === 'elder' ? '<img id="kick" src="./assets/props/kick-wojak-v1.png" alt="踢出的球鞋"><div id="impact" aria-hidden="true">✦</div>' : STAGES[stage].id === 'odor' ? '<img class="spray-bottle" src="./assets/props/deodorizer-wojak-v1.png" alt="Wojak 除臭劑"><svg class="spray-jet" aria-hidden="true"><path/></svg><div id="spray-burst"></div>' : ''}${game.id === 'legs' ? '<div class="legs-taunt" id="legs-taunt"></div><img id="push-hand" src="./assets/props/push-hand-wojak-v1.png" alt="推膝蓋的手掌"><span id="push-impact" aria-hidden="true">✦</span>' : ''}<div id="effect" aria-live="polite"></div><div id="countdown"></div></div><div class="controls">${STAGES[stage].id === 'elder' ? '<p>直接點老人！12 次命中擊倒 · 點空也會消耗出腳機會</p>' : ['urine','crowd'].includes(game.id) ? '<button data-input="-1">← 往左</button><button data-input="1">往右 →</button>' : STAGES[stage].id === 'legs' ? '<button data-input="0" class="primary">推回去！</button>' : '<p>點掉 Wojak 臭氣！越後面越快，一團一噴。</p>'}</div><p class="play-hint" id="hint"></p>`;
   renderGame();
 }
 function renderLegPose() {
@@ -181,9 +183,18 @@ function renderGame() {
     renderLegPose();
     hint.textContent = `合腿進度 ${Math.round(game.hits / game.total * 100)}% · ${game.hits} / ${game.total} 次`;
   } else {
-    document.querySelector('#player').style.left = `${(game.lane + .5) / 3 * 100}%`;
-    document.querySelector('#targets').innerHTML = game.activeTargets.map(t => `<img src="./assets/characters/commuter-wojak-v1.png" class="commuter" style="left:${(t.lane + .5) / 3 * 100}%;top:${8 + (game.time - t.at) / 3 * 74}%" alt="迎面人群">`).join('');
-    hint.textContent = `閃過 ${game.hits} 人 · 碰撞 ${game.misses} 次`;
+    document.querySelector('#player').style.left = `${22 + game.lane * 28}%`;
+    const active = game.activeTargets;
+    const names = ['買菜阿姨', '背包學生', '女上班族', '斜背包大叔'];
+    document.querySelector('#targets').innerHTML = active.flatMap(t => {
+      const progress = Math.min(1, (game.time - t.at) / t.lifetime);
+      return t.lanes.map((lane, index) => {
+        const variant = (t.id * 2 + index) % 4;
+        return `<img src="./assets/characters/boarding-${variant}-v1.png" class="commuter ${t === active[0] ? 'nearest' : ''}" style="left:${50 + (lane - 1) * (17 + 11 * progress)}%;top:${28 + progress * 54}%;--approach:${.55 + progress * .6};z-index:${Math.round(progress * 10)}" alt="搶著上車的${names[variant]}">`;
+      });
+    }).join('');
+    document.querySelector('#crowd-warning').textContent = active[0] ? `人潮衝入！往${['左邊 ←', '中間 ↑', '右邊 →'][active[0].safeLane]}空隙閃` : '車門開了，準備突圍！';
+    hint.textContent = `閃過 ${game.hits}/${game.total} 波 · 被擠 ${game.misses} 次 · ${game.time < 12 ? '他們全都要上車！' : '人潮加速，快找空隙！'}`;
   }
 }
 let effectUntil = 0;
@@ -330,8 +341,8 @@ function frame(now) {
       bucket.classList.remove('caught'); if (caught) { void bucket.offsetWidth; bucket.classList.add('caught'); }
     }
     if (game.id === 'odor' && game.misses > misses) effect('臭氣擴散！', false);
-    if (STAGES[stage].id === 'crowd' && game.misses > misses) effect('撞到啦！', false);
-    else if (STAGES[stage].id === 'crowd' && game.hits > hits) effect('成功閃過！', true);
+    if (STAGES[stage].id === 'crowd' && game.misses > misses) effect('我還沒下車啊！', false);
+    else if (STAGES[stage].id === 'crowd' && game.hits > hits) effect('借過！我要下車！', true);
     renderGame(); if (game.done) finish();
   }
   if (now > effectUntil) { const effect = document.querySelector('#effect'); if (effect) effect.textContent = ''; }
