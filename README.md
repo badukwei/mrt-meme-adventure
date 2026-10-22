@@ -1,31 +1,26 @@
-# 捷運迷因冒險
+# 台北捷運奇遇記
 
-手機直式、固定對話與五款限時小遊戲的純前端 MVP。
+手機直式的 Wojak 捷運五關小遊戲，原生 JavaScript + DOM/CSS，無後端與建置需求。
 
-以 `PLAN.md` 為玩法規格。實作採原生 JavaScript + DOM/CSS，不需後端或打包工具。
-老人沿用 v12 與瘀青、腫臉、倒地分段圖片；原有老人關完整保留。
+## 開發
 
-## 開發步驟
+- `npm start`：http://127.0.0.1:5173
+- `npm test`：核心玩法測試
+- 本機跳關：`?stage=legs&seed=1`，可指定 urine、elder、odor、legs、crowd。
 
-- [x] 建立版本控制與 MVP 決策
-- [x] 五款遊戲邏輯與計分驗證
-- [x] 對話、挑戰與結算流程
-- [x] 圖片、音效與分享卡
-- [x] 桌面與手機尺寸瀏覽器驗收
-- [ ] 實體手機觸控、分享與節奏驗收
+## 目錄
 
-暫定文案與名稱由 MVP 補齊，可後續修改。老人採「踢當下位置」；三種結果沿用 200／350 分門檻。
+- `src/`：畫面、劇情、玩法與樣式。
+- `tests/`：核心玩法測試。
+- `assets/characters/`、`assets/props/`：遊戲角色與道具。
+- `assets/backgrounds/`：遊戲與首頁背景；`dialogue/` 是每關完整對話情境圖。
+- `assets/sources/`：原始生成圖集。
+- `assets/archive/`：已替換舊素材。
+- `docs/planning/`：現行規格與歷史規劃。
+- `docs/art/`：美術索引與集中保存的提示詞。
+- `docs/QA.md`：驗收紀錄。
+- `output/promo/`：本機宣傳影片，Git 忽略。
 
-執行 `npm test` 驗證核心邏輯；`npm start` 啟動本機伺服器（http://127.0.0.1:5173）。
+[現行規格](docs/planning/current.md) · [歷史規劃](docs/planning/history.md) · [美術索引](docs/art/README.md) · [驗收](docs/QA.md)
 
-MVP 美術：接尿關角色、車廂與道具使用 Wojak 風格 PNG；老人沿用 v12 圖組。其餘既有關卡維持 CSS 分層人物與本地 SVG，執行時無外部素材服務依賴。
-
-驗收紀錄見 [docs/QA.md](docs/QA.md)。已完成桌面與手機尺寸的瀏覽器驗收；實體手機觸控、原生分享與實際遊玩節奏仍待確認。
-
-本機除錯：`http://127.0.0.1:5173/?stage=legs&seed=1`，可指定 urine、elder、odor、legs、crowd；此入口僅在本機網域啟用。
-
-部署時將 `index.html`、`src/`、`assets/` 放到任意靜態網站服務即可，不需要建置或伺服器 API。
-
-第二關老人：直接點老人，15 秒內命中 12 次提前擊倒；4／8 次切換受傷圖。每 0.65 秒換位，一次換位只有一次踢擊機會，踢空也消耗機會。
-
-第一關接尿：12 秒內左右移動 Wojak 桶子，接住 18 滴尿；漏接在綠色座椅留下尿漬。角色、背景、桶子與尿滴皆採生成圖片，提示詞與 PNG 同目錄保存。五關總分 500 分。
+main 為五關開發版，release/v1 為既有兩關 GitHub Pages 部署版。靜態部署需要 index.html、src/ 與執行時使用的 assets。

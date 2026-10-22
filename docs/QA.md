@@ -97,3 +97,11 @@
 - Recolored all four elder states with warm skin tones; original sprites retained, new PNGs retain alpha. Generation prompts saved beside assets.
 - Playwright checks passed at 320×740, 390×844 and 1000×900: home controls, start transition, no horizontal overflow, all four elder states, 12-hit completion and 100-point result, no page errors or failed resources.
 - `npm test`: 15 passed. `node --check src/app.js` passed. Screenshots reviewed in `/tmp/mrt-title-qa/`. Physical devices not tested.
+
+## 2026-10-22 — Organized assets and dedicated dialogue scenes
+
+- Moved historical PLAN.md to docs/planning/history.md; current rules now live in docs/planning/current.md. README links to the canonical documents.
+- Centralized generation prompts in docs/art/prompts. Retired character art moved to assets/archive, original atlases to assets/sources, preserving files. Added docs/art/ASSETS.md inventory.
+- Generated five distinct full-scene Wojak illustrations in assets/backgrounds/dialogue with built-in imagegen. Dialogue and tutorial use these scenes; gameplay retains its separate backgrounds and sprites.
+- Playwright traversed all five dialogue/tutorial/gameplay/feedback stages and the five-row ending at 320×740, 390×844 and 1000×900. Verified scene sources, image decoding, no horizontal overflow, no page errors or HTTP failures. Screenshots: /tmp/mrt-dialogue-qa.
+- 15 core tests passed; app syntax and git diff whitespace checks passed. Physical devices not tested.

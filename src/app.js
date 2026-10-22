@@ -1,5 +1,5 @@
-import { Challenge, STAGES, ending, scoreGame, odorPosition } from './game.js?v=title2';
-import { stories } from './story.js?v=title2';
+import { Challenge, STAGES, ending, scoreGame, odorPosition } from './game.js?v=dialogue1';
+import { stories } from './story.js?v=dialogue1';
 const screen = document.querySelector('#screen');
 const route = document.querySelector('#route');
 const pauseButton = document.querySelector('#pause');
@@ -70,14 +70,17 @@ function opening() {
   setPhase('opening');
   screen.innerHTML = `<div class="scene">${art('hero')}</div><div class="dialogue"><span class="speaker">你 · 下班只剩半條命的上班族</span><p>襯衫皺了，黑眼圈深了，公事包比人生還重。你只想搭車回家。<br>車門即將關閉，今天的奇人異事卻才正要開始。</p><button class="primary" data-action="enter">走進車廂 →</button></div>`;
 }
+function narrativeArt() {
+  return `<img class="narrative-art" src="./assets/backgrounds/dialogue/${STAGES[stage].id}-v1.png" alt="${STAGES[stage].title}的捷運情境">`;
+}
 function dialogue() {
   setPhase('dialogue');
   const story = stories[stage];
-  screen.innerHTML = `<div class="scene">${art(story.art)}<span class="scene-label">${String(stage + 1).padStart(2,'0')} / ${STAGES[stage].title}</span></div><div class="dialogue"><span class="speaker">${story.name}</span><p>${story.lines[line]}</p><button class="primary" data-action="next">${line === story.lines.length - 1 ? '看看怎麼玩' : '繼續'} →</button><small>${line + 1} / ${story.lines.length}</small></div>`;
+  screen.innerHTML = `<div class="scene narrative-scene">${narrativeArt()}<span class="scene-label">${String(stage + 1).padStart(2,'0')} / ${STAGES[stage].title}</span></div><div class="dialogue"><span class="speaker">${story.name}</span><p>${story.lines[line]}</p><button class="primary" data-action="next">${line === story.lines.length - 1 ? '看看怎麼玩' : '繼續'} →</button><small>${line + 1} / ${story.lines.length}</small></div>`;
 }
 function tutorial() {
   setPhase('tutorial');
-  screen.innerHTML = `<div class="scene">${art(stories[stage].art)}</div><div class="dialogue"><span class="speaker">第 ${stage + 1} 關 · ${STAGES[stage].duration} 秒</span><h2>${STAGES[stage].title}</h2><p>${stories[stage].instruction}</p><small>${['urine','crowd'].includes(STAGES[stage].id) ? '也可以使用鍵盤 ← →' : '滑鼠點擊或手指點按；長按不會連發'}</small><button class="primary" data-action="start">準備好了，開始！</button></div>`;
+  screen.innerHTML = `<div class="scene narrative-scene">${narrativeArt()}</div><div class="dialogue"><span class="speaker">第 ${stage + 1} 關 · ${STAGES[stage].duration} 秒</span><h2>${STAGES[stage].title}</h2><p>${stories[stage].instruction}</p><small>${['urine','crowd'].includes(STAGES[stage].id) ? '也可以使用鍵盤 ← →' : '滑鼠點擊或手指點按；長按不會連發'}</small><button class="primary" data-action="start">準備好了，開始！</button></div>`;
 }
 function start() {
   game = new Challenge(stage, random); countdown = 3; paused = false;
