@@ -90,3 +90,10 @@
 - 瀏覽器先操作再站定的測試取得 50／100；單關除錯其餘四關填 0，最後結算顯示五列、50／500，下載分享卡成功。重玩清空進度並顯示新主角開場。
 - 已檢視劇情、早期及後期遊戲截圖，放大路人並加上遠端等待上車人潮；警示與玩家操作保持可讀。
 - 未做實體手機手感或原生分享面板驗證。
+
+## 2026-10-22 — Title screen and elder skin color
+
+- Added a dedicated station-exterior title background with the tired office protagonist, title 台北捷運奇遇記 and a single 點擊開始 button. Header and route are hidden only on the home screen.
+- Recolored all four elder states with warm skin tones; original sprites retained, new PNGs retain alpha. Generation prompts saved beside assets.
+- Playwright checks passed at 320×740, 390×844 and 1000×900: home controls, start transition, no horizontal overflow, all four elder states, 12-hit completion and 100-point result, no page errors or failed resources.
+- `npm test`: 15 passed. `node --check src/app.js` passed. Screenshots reviewed in `/tmp/mrt-title-qa/`. Physical devices not tested.

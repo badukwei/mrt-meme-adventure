@@ -1,5 +1,5 @@
-import { Challenge, STAGES, ending, scoreGame, odorPosition } from './game.js?v=crowd2';
-import { stories } from './story.js?v=crowd2';
+import { Challenge, STAGES, ending, scoreGame, odorPosition } from './game.js?v=title2';
+import { stories } from './story.js?v=title2';
 const screen = document.querySelector('#screen');
 const route = document.querySelector('#route');
 const pauseButton = document.querySelector('#pause');
@@ -30,7 +30,7 @@ function beep(good = true) {
     oscillator.start(); oscillator.stop(audio.currentTime + .13);
   } catch {}
 }
-const elderSprites = ['elder-potbelly-v12.png', 'elder-v12-bruised.png', 'elder-v12-battered.png', 'elder-v12-down.png'];
+const elderSprites = ['elder-v12-skin-base.png', 'elder-v12-skin-bruised.png', 'elder-v12-skin-battered.png', 'elder-v12-skin-down.png'];
 for (const file of [...elderSprites, 'legs-wojak-open-v2.png', 'legs-wojak-half-v2.png', 'legs-wojak-closed-v2.png']) { const img = new Image(); img.src = `./assets/characters/${file}`; }
 function elderState() { return game.hits >= 12 ? 3 : game.hits >= 8 ? 2 : game.hits >= 4 ? 1 : 0; }
 function kickSound(hit) {
@@ -46,7 +46,7 @@ function kickSound(hit) {
 }
 function art(kind) {
   if (kind === 'urine') return '<img class="urine-man character" src="./assets/characters/black-passenger-wojak-action-v1.png" alt="花襯衫、藍短褲的黑人 Wojak 乘客">';
-  if (kind === 'elder') return '<img class="elder character" src="./assets/characters/elder-potbelly-v12.png" alt="堅持要讓座的阿伯">';
+  if (kind === 'elder') return '<img class="elder character" src="./assets/characters/elder-v12-skin-base.png" alt="堅持要讓座的阿伯">';
   if (kind === 'odor') return '<img class="odor-man character" src="./assets/characters/odor-seated-wojak-v2.png" alt="坐在正對面、雙手抬起的 Wojak 吊嘎大哥">';
   if (kind === 'legs') return '<img class="legs-man character" src="./assets/characters/legs-wojak-open-v2.png" alt="張開雙腿的 Wojak 乘客" data-pose="0">';
   if (kind === 'crowd') return '<img class="boarding-scene" src="./assets/backgrounds/boarding-rush-wojak-v1.png" alt="車門一開，大批 Wojak 乘客擋住上班族、搶著上車">';
@@ -57,13 +57,13 @@ function updateRoute() {
   route.innerHTML = STAGES.map((s, i) => `<span class="${phase !== 'home' && i === stage ? 'current' : ''} ${i < results.length ? 'complete' : ''}">${['接尿','讓座','消臭','合腿','下車'][i]}</span>`).join('');
 }
 function setPhase(next) {
-  phase = next; screen.dataset.stage = STAGES[stage].id; updateRoute();
+  phase = next; document.querySelector('#app').dataset.phase = next; screen.dataset.stage = STAGES[stage].id; updateRoute();
   pauseButton.hidden = !['countdown', 'play'].includes(phase);
 }
 function home() {
   game = null; results = []; stage = 0; paused = false;
   setPhase('home');
-  screen.innerHTML = `<div class="hero"><div class="ticket">通勤生存挑戰 / 單人乘車券</div><h1>下一站，<br><em>理智斷線。</em></h1><p>上車靠運氣，下車靠實力。<br>五場荒謬挑戰，你能帶幾分下車？</p>${art('elder')}<div class="hero-bottom"><span>約 3–5 分鐘 · 手機／電腦都能玩</span><button class="primary" data-action="board">刷卡上車 →</button><small>虛構搞笑情境。友善乘車，請勿模仿攻擊行為。</small></div></div>`;
+  screen.innerHTML = `<div class="hero title-screen"><h1>台北捷運奇遇記</h1>${art('hero')}<button class="primary title-start" data-action="board">點擊開始</button></div>`;
 }
 function opening() {
   results = []; stage = 0; line = 0; game = null; heldPointer = null;

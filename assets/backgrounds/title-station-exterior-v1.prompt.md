@@ -1,0 +1,5 @@
+# Generation prompt
+
+Tool: built-in imagegen
+
+Brand new exclusive title-screen BACKGROUND for a Taiwanese Wojak commuter game, portrait 1024x1536. Evening outside a Taipei metro station entrance: an illuminated teal glass-and-metal subway entrance canopy to the right midground, stairs descend underground, tiled pedestrian plaza in foreground, scooters parked far left, modest Taipei apartment/shop skyline silhouettes, small distant elevated rail detail, warm peach dusk sky and muted teal city palette. Quiet tired after-work atmosphere, whimsical rough handdrawn black outlines and flat color fills, same classic Wojak meme aesthetic, not realistic, not glossy 3D. Important layout: upper quarter mostly simple dusk sky as clean title space; middle and lower center open uncluttered sidewalk reserved for separately composited full body office worker; bottom 15 percent quiet dark teal pavement for start button. NO people, no text, no letters, no logos, no UI. This is an exterior station entrance, NOT a carriage or interior platform. Opaque full background.

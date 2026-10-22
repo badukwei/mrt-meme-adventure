@@ -89,3 +89,13 @@ img.odor-man{position:absolute;left:50%;bottom:2%;width:82%;height:92%;object-fi
 .boarding-queue{position:absolute;left:9%;right:9%;top:14%;height:17%;display:flex;justify-content:center;opacity:.72;pointer-events:none;mask-image:linear-gradient(#000 75%,transparent)}
 .boarding-queue img{width:15%;height:100%;object-fit:contain;margin:0 -1.2%}
 .arena.crowd .commuter{width:clamp(82px,22vw,120px);height:clamp(120px,33vw,166px)}
+
+/* An exclusive station exterior for the minimal title screen. */
+#app[data-phase="home"]>header,#app[data-phase="home"]>#route{display:none}
+#app[data-phase="home"] #screen{min-height:0}
+#app .title-screen{height:100svh;min-height:600px;padding:36px 22px max(28px,env(safe-area-inset-bottom));background:url('../assets/backgrounds/title-station-exterior-v1.png') center/cover;isolation:isolate}
+#app .title-screen h1{margin:0;text-align:center;font-size:clamp(29px,7.5vw,46px);line-height:1.3;letter-spacing:.035em;color:#153b3c;text-shadow:0 2px 0 #fff4d8,0 0 16px #fff4d8;z-index:2}
+#app .title-screen .office-hero{width:90%;height:69%;bottom:13%;left:50%;object-position:center bottom;z-index:1;filter:drop-shadow(0 8px 4px #132e3740)}
+.title-start{position:absolute;bottom:max(30px,env(safe-area-inset-bottom));left:14%;right:14%;min-height:64px;font-size:24px;box-shadow:0 5px 0 #143b3e;z-index:3}
+@media(min-width:700px){#app .title-screen{height:calc(100svh - 44px);min-height:620px}}
+@media(max-height:650px){#app .title-screen{min-height:0}.title-start{bottom:20px;min-height:52px}#app .title-screen .office-hero{height:64%;bottom:16%}}
